@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html { -webkit-text-size-adjust: 100%; }
+        body { overflow-wrap: anywhere; }
+        /* Tablas: no romper filas, el contenedor hace scroll horizontal */
+        table th, table td { white-space: nowrap; }
+        /* Evita que grids/flex se desborden por contenido ancho */
+        section, main { min-width: 0; }
+        canvas { max-width: 100%; }
+    </style>
     <title>Sistema de Gestión & Inventario - Loja</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,40 +25,40 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-gray-100 font-sans antialiased flex h-screen overflow-hidden">
+<body class="bg-gray-100 font-sans antialiased flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden">
 
     <!-- MÓDULO LATERAL (SIDEBAR) -->
-    <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between p-4 shadow-lg shrink-0">
+    <aside class="w-full lg:w-64 bg-slate-900 text-white flex flex-col justify-between p-3 lg:p-4 shadow-lg shrink-0 lg:overflow-y-auto">
         <div>
-            <div class="flex items-center space-x-3 mb-8 px-2">
+            <div class="flex items-center space-x-3 mb-3 lg:mb-8 px-2">
                 <i data-lucide="layout-dashboard" class="w-8 h-8 text-blue-400"></i>
                 <span class="text-xl font-bold tracking-wide">Sistema Loja</span>
             </div>
             
-            <nav class="space-y-2">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
+            <nav class="flex lg:block gap-2 lg:gap-0 lg:space-y-2 overflow-x-auto pb-1 lg:pb-0">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
                     <i data-lucide="receipt"></i>
                     <span>Facturas & Servicios</span>
                 </button>
-                <button onclick="switchTab('inventario')" id="nav-inventario" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
+                <button onclick="switchTab('inventario')" id="nav-inventario" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
                     <i data-lucide="boxes"></i>
                     <span>Inventario & Rotación</span>
                 </button>
-                <button onclick="switchTab('ventas')" id="nav-ventas" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
+                <button onclick="switchTab('ventas')" id="nav-ventas" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
                     <i data-lucide="shopping-cart"></i>
                     <span>Ventas Agosto</span>
                 </button>
             </nav>
         </div>
 
-        <div class="border-t border-slate-800 pt-4 px-2 text-sm text-gray-400">
+        <div class="hidden lg:block border-t border-slate-800 pt-4 px-2 text-sm text-gray-400">
             <p class="font-medium text-gray-300">Carga de Datos</p>
             <p class="text-xs text-gray-500">Soporta: .xlsx, .xls</p>
         </div>
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="flex-1 overflow-y-auto p-8">
+    <main class="flex-1 min-w-0 lg:overflow-y-auto p-3 sm:p-6 lg:p-8">
 
         <!-- BOTÓN SUPERIOR DE CARGA DE ARCHIVOS -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -70,34 +79,34 @@
         <!-- SECCIÓN 1: DASHBOARD (FACTURAS DAS2) -->
         <section id="tab-dashboard" class="hidden space-y-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 class="text-2xl font-bold text-gray-800">Panel de Control de Facturas & Análisis Porcentual</h1>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Panel de Control de Facturas & Análisis Porcentual</h1>
                 
-                <div class="flex flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
                     <div>
                         <label class="text-xs font-semibold text-gray-500 block">Mes:</label>
-                        <select id="filter-mes" onchange="applyDashboardFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filter-mes" onchange="applyDashboardFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-gray-500 block">Tipo de Servicio:</label>
-                        <select id="filter-servicio" onchange="applyDashboardFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filter-servicio" onchange="applyDashboardFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-gray-500 block">Tipo de Pago:</label>
-                        <select id="filter-pago" onchange="applyDashboardFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filter-pago" onchange="applyDashboardFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-gray-500 block">Estado:</label>
-                        <select id="filter-estado" onchange="applyDashboardFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filter-estado" onchange="applyDashboardFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
-                    <button type="button" id="btn-exportar-dashboard-pdf" onclick="exportDashboardPDF()" class="self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                    <button type="button" id="btn-exportar-dashboard-pdf" onclick="exportDashboardPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
                         <i data-lucide="file-down" class="w-4 h-4"></i>
                         <span>Generar PDF</span>
                     </button>
@@ -105,50 +114,50 @@
             </div>
 
             <!-- TARJETAS KPI DAS2 -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Monto Total Facturado</p>
-                    <h3 class="text-2xl font-bold text-gray-800 mt-1" id="kpi-monto">$0.00</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-gray-800 mt-1" id="kpi-monto">$0.00</h3>
                     <span class="text-xs text-blue-600 font-semibold">100% del total filtrado</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Cobrado / Recuperado</p>
-                    <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="kpi-cobrado">$0.00</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-emerald-600 mt-1" id="kpi-cobrado">$0.00</h3>
                     <span class="text-xs text-emerald-600 font-bold" id="kpi-cobrado-pct">0.00% recuperado</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Saldo Pendiente</p>
-                    <h3 class="text-2xl font-bold text-red-600 mt-1" id="kpi-saldo">$0.00</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-red-600 mt-1" id="kpi-saldo">$0.00</h3>
                     <span class="text-xs text-red-600 font-bold" id="kpi-saldo-pct">0.00% pendiente</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Efectividad de Cobro</p>
-                    <h3 class="text-2xl font-bold text-blue-600 mt-1" id="kpi-efectividad">0.0%</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-blue-600 mt-1" id="kpi-efectividad">0.0%</h3>
                     <span class="text-xs text-gray-500" id="kpi-facturas-count">0 facturas procesadas</span>
                 </div>
             </div>
 
             <!-- GRÁFICOS DAS2 -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-gray-800 mb-4">% Participación por Servicio</h2>
-                    <canvas id="chartServicios" height="220"></canvas>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartServicios"></canvas></div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-gray-800 mb-4">% Monto por Tipo de Pago</h2>
-                    <canvas id="chartPagos" height="220"></canvas>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartPagos"></canvas></div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-gray-800 mb-4">% Distribución Pagados vs Pendientes</h2>
-                    <canvas id="chartEstados" height="220"></canvas>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartEstados"></canvas></div>
                 </div>
             </div>
 
             <!-- TABLA DAS2 -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-between sm:items-center bg-gray-50">
                     <h3 class="font-bold text-gray-800">Detalle Dinámico con Porcentajes</h3>
-                    <input type="text" id="search-das2" onkeyup="applyDashboardFilters()" placeholder="Buscar cliente o factura..." class="text-sm p-2 border border-gray-300 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="search-das2" onkeyup="applyDashboardFilters()" placeholder="Buscar cliente o factura..." class="text-sm p-2 border border-gray-300 rounded-lg w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="overflow-x-auto max-h-96">
                     <table class="w-full text-left text-sm">
@@ -176,13 +185,13 @@
         <!-- SECCIÓN 2: INVENTARIO COMPLETO Y ROTACIÓN -->
         <section id="tab-inventario" class="space-y-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 class="text-2xl font-bold text-gray-800">Módulo de Inventario & Control de Rotación</h1>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Módulo de Inventario & Control de Rotación</h1>
                 
                 <!-- FILTROS DE INVENTARIO -->
-                <div class="flex flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
                     <div>
                         <label class="text-xs font-semibold text-gray-500 block">Nivel de Rotación:</label>
-                        <select id="filter-inv-rotacion" onchange="applyInventarioFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filter-inv-rotacion" onchange="applyInventarioFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                             <option value="ALTA">Alta Rotación (Con Salidas)</option>
                             <option value="SIN">Sin Rotación (Sin Ventas)</option>
@@ -190,17 +199,17 @@
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-gray-500 block">Estado / Condición:</label>
-                        <select id="filter-inv-estado" onchange="applyInventarioFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filter-inv-estado" onchange="applyInventarioFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
                     <div>
                         <label class="text-xs font-semibold text-gray-500 block">Marca:</label>
-                        <select id="filter-inv-marca" onchange="applyInventarioFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filter-inv-marca" onchange="applyInventarioFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todas</option>
                         </select>
                     </div>
-                    <button type="button" id="btn-exportar-inventario-pdf" onclick="exportInventarioPDF()" class="self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                    <button type="button" id="btn-exportar-inventario-pdf" onclick="exportInventarioPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
                         <i data-lucide="file-down" class="w-4 h-4"></i>
                         <span>Generar PDF</span>
                     </button>
@@ -208,46 +217,46 @@
             </div>
 
             <!-- TARJETAS KPI DE INVENTARIO -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Variedad de Equipos / Ítems</p>
-                    <h3 class="text-2xl font-bold text-gray-800 mt-1" id="inv-kpi-total-items">0</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-gray-800 mt-1" id="inv-kpi-total-items">0</h3>
                     <span class="text-xs text-blue-600 font-semibold" id="inv-kpi-unidades-total">0 unidades en stock inicial</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Valor Total Invertido</p>
-                    <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="inv-kpi-costo-total">$0.00</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-emerald-600 mt-1" id="inv-kpi-costo-total">$0.00</h3>
                     <span class="text-xs text-emerald-600 font-bold">Costo total acumulado</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Unidades Vendidas / Salidas</p>
-                    <h3 class="text-2xl font-bold text-indigo-600 mt-1" id="inv-kpi-vendidas">0</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-indigo-600 mt-1" id="inv-kpi-vendidas">0</h3>
                     <span class="text-xs text-indigo-600 font-bold" id="inv-kpi-stock-actual">0 unidades en stock actual</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Tasa de Rotación Global</p>
-                    <h3 class="text-2xl font-bold text-amber-600 mt-1" id="inv-kpi-rotacion-pct">0.0%</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-amber-600 mt-1" id="inv-kpi-rotacion-pct">0.0%</h3>
                     <span class="text-xs text-gray-500">% de stock total despachado</span>
                 </div>
             </div>
 
             <!-- GRÁFICOS DE INVENTARIO -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-gray-800 mb-4">Stock Inic vs Unidades Vendidas por Estado</h2>
-                    <canvas id="chartInvRotacion" height="200"></canvas>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartInvRotacion"></canvas></div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-gray-800 mb-4">% Valor Invertido por Estado/Condición</h2>
-                    <canvas id="chartInvValor" height="200"></canvas>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartInvValor"></canvas></div>
                 </div>
             </div>
 
             <!-- TABLA DINÁMICA DE INVENTARIO CON ROTACIÓN -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-between sm:items-center bg-gray-50">
                     <h3 class="font-bold text-gray-800">Tabla Dinámica de Equipos con Indicadores de Rotación</h3>
-                    <input type="text" id="search-inv" onkeyup="applyInventarioFilters()" placeholder="Buscar equipo, marca o modelo..." class="text-sm p-2 border border-gray-300 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="search-inv" onkeyup="applyInventarioFilters()" placeholder="Buscar equipo, marca o modelo..." class="text-sm p-2 border border-gray-300 rounded-lg w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="overflow-x-auto max-h-96">
                     <table class="w-full text-left text-sm">
@@ -276,15 +285,15 @@
         <!-- SECCIÓN 3: VENTAS AGOSTO (MEJORADA) -->
         <section id="tab-ventas" class="hidden space-y-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 class="text-2xl font-bold text-gray-800">Módulo de Ventas Agosto</h1>
-                <div class="flex flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Módulo de Ventas Agosto</h1>
+                <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
                     <div>
                         <label class="text-xs font-semibold text-gray-500 block">Filtrar por Estado:</label>
-                        <select id="filter-ventas-estado" onchange="applyVentasFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filter-ventas-estado" onchange="applyVentasFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
-                    <button type="button" id="btn-exportar-ventas-pdf" onclick="exportVentasDashboardPDF()" class="self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                    <button type="button" id="btn-exportar-ventas-pdf" onclick="exportVentasDashboardPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
                         <i data-lucide="file-down" class="w-4 h-4"></i>
                         <span>Generar PDF</span>
                     </button>
@@ -292,42 +301,42 @@
             </div>
 
             <!-- TARJETAS KPI VENTAS -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Total Ventas (Facturado)</p>
-                    <h3 class="text-2xl font-bold text-gray-800 mt-1" id="kpi-ventas-total">$0.00</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-gray-800 mt-1" id="kpi-ventas-total">$0.00</h3>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Costo Total</p>
-                    <h3 class="text-2xl font-bold text-red-600 mt-1" id="kpi-ventas-costo">$0.00</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-red-600 mt-1" id="kpi-ventas-costo">$0.00</h3>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Utilidad Bruta</p>
-                    <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="kpi-ventas-utilidad-bruta">$0.00</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-emerald-600 mt-1" id="kpi-ventas-utilidad-bruta">$0.00</h3>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Utilidad Neta</p>
-                    <h3 class="text-2xl font-bold text-blue-600 mt-1" id="kpi-ventas-utilidad-neta">$0.00</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-blue-600 mt-1" id="kpi-ventas-utilidad-neta">$0.00</h3>
                 </div>
             </div>
 
             <!-- GRÁFICOS VENTAS -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-gray-800 mb-4">Ventas por Cliente</h2>
-                    <canvas id="chartVentasCliente" height="200"></canvas>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartVentasCliente"></canvas></div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-gray-800 mb-4">Composición de Costos</h2>
-                    <canvas id="chartVentasCostos" height="200"></canvas>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartVentasCostos"></canvas></div>
                 </div>
             </div>
 
             <!-- TABLA DE VENTAS -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-between sm:items-center bg-gray-50">
                     <h3 class="font-bold text-gray-800">Detalle de Ventas Agosto</h3>
-                    <input type="text" id="search-ventas" onkeyup="applyVentasFilters()" placeholder="Buscar cliente o factura..." class="text-sm p-2 border border-gray-300 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="search-ventas" onkeyup="applyVentasFilters()" placeholder="Buscar cliente o factura..." class="text-sm p-2 border border-gray-300 rounded-lg w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="overflow-x-auto max-h-96">
                     <table class="w-full text-left text-sm">
@@ -1400,7 +1409,7 @@
                     }]
                 },
                 options: {
-                    responsive: true,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } }
                 }
             });
@@ -1426,7 +1435,7 @@
                     }]
                 },
                 options: {
-                    responsive: true,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: {
                         tooltip: {
                             callbacks: {
@@ -1582,7 +1591,7 @@
                         { label: 'Unidades Vendidas/Salidas', data: Object.values(rotacionMap).map(v => v.vendida), backgroundColor: '#4f46e5' }
                     ]
                 },
-                options: { responsive: true, plugins: { legend: { position: 'top' } } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
             });
 
             const ctx2 = document.getElementById('chartInvValor').getContext('2d');
@@ -1596,7 +1605,7 @@
                     }]
                 },
                 options: {
-                    responsive: true,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: {
                         tooltip: {
                             callbacks: {
@@ -1746,7 +1755,7 @@
                     labels: Object.keys(serviciosMap),
                     datasets: [{ label: 'Monto ($)', data: Object.values(serviciosMap), backgroundColor: '#3b82f6' }]
                 },
-                options: { responsive: true, plugins: { legend: { display: false }, tooltip: tooltipPercentOption } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tooltipPercentOption } }
             });
 
             const ctx2 = document.getElementById('chartPagos').getContext('2d');
@@ -1756,7 +1765,7 @@
                     labels: Object.keys(pagosMap),
                     datasets: [{ label: 'Monto ($)', data: Object.values(pagosMap), backgroundColor: '#10b981' }]
                 },
-                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false }, tooltip: tooltipPercentOption } }
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tooltipPercentOption } }
             });
 
             const totalItems = data.length;
@@ -1768,7 +1777,7 @@
                     datasets: [{ data: Object.values(estadosMap), backgroundColor: ['#10b981', '#ef4444', '#f59e0b'] }]
                 },
                 options: { 
-                    responsive: true,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: {
                         tooltip: {
                             callbacks: {
@@ -1801,6 +1810,18 @@
                 </tr>
             `).join('');
         }
+        // ==========================================
+        // RESPONSIVE: ajustar gráficos al cambiar zoom / tamaño
+        // ==========================================
+        let _resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(_resizeTimer);
+            _resizeTimer = setTimeout(() => {
+                [chartServicios, chartPagos, chartEstados, chartInvRotacion,
+                 chartInvValor, chartVentasCliente, chartVentasCostos]
+                    .forEach(c => { if (c) c.resize(); });
+            }, 150);
+        });
     </script>
 </body>
 </html>
