@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión & Inventario - Loja</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (Lector de Excel) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Exportación del dashboard a PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-100 font-sans antialiased flex h-screen overflow-hidden">
+
+    <!-- MÓDULO LATERAL (SIDEBAR) -->
+    <aside class="w-64 bg-slate-900 text-white flex flex-col justify-between p-4 shadow-lg shrink-0">
+        <div>
+            <div class="flex items-center space-x-3 mb-8 px-2">
+                <i data-lucide="layout-dashboard" class="w-8 h-8 text-blue-400"></i>
+                <span class="text-xl font-bold tracking-wide">Sistema Loja</span>
+            </div>
+            
+            <nav class="space-y-2">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
+                    <i data-lucide="receipt"></i>
+                    <span>Facturas & Servicios</span>
+                </button>
+                <button onclick="switchTab('inventario')" id="nav-inventario" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
+                    <i data-lucide="boxes"></i>
+                    <span>Inventario & Rotación</span>
+                </button>
+                <button onclick="switchTab('ventas')" id="nav-ventas" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
+                    <i data-lucide="shopping-cart"></i>
+                    <span>Ventas Agosto</span>
+                </button>
+            </nav>
+        </div>
+
+        <div class="border-t border-slate-800 pt-4 px-2 text-sm text-gray-400">
+            <p class="font-medium text-gray-300">Carga de Datos</p>
+            <p class="text-xs text-gray-500">Soporta: .xlsx, .xls</p>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 overflow-y-auto p-8">
+
+        <!-- BOTÓN SUPERIOR DE CARGA DE ARCHIVOS -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <i data-lucide="file-up" class="w-6 h-6 text-blue-600"></i>
+                <div>
+                    <h3 class="font-bold text-gray-800">Cargar Archivo Excel</h3>
+                    <p class="text-xs text-gray-500">Sube tus archivos DAS2, Inventario o Ventas para actualizar métricas e indicadores de porcentaje.</p>
+                </div>
+            </div>
+            <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                <i data-lucide="upload" class="w-4 h-4"></i>
+                <span>Seleccionar Archivo</span>
+                <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="handleFileUpload(event)">
+            </label>
+        </div>
+
+        <!-- SECCIÓN 1: DASHBOARD (FACTURAS DAS2) -->
+        <section id="tab-dashboard" class="hidden space-y-6">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <h1 class="text-2xl font-bold text-gray-800">Panel de Control de Facturas & Análisis Porcentual</h1>
+                
+                <div class="flex flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 block">Mes:</label>
+                        <select id="filter-mes" onchange="applyDashboardFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="TODOS">Todos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 block">Tipo de Servicio:</label>
+                        <select id="filter-servicio" onchange="applyDashboardFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="TODOS">Todos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 block">Tipo de Pago:</label>
+                        <select id="filter-pago" onchange="applyDashboardFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="TODOS">Todos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 block">Estado:</label>
+                        <select id="filter-estado" onchange="applyDashboardFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="TODOS">Todos</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btn-exportar-dashboard-pdf" onclick="exportDashboardPDF()" class="self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        <span>Generar PDF</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TARJETAS KPI DAS2 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Monto Total Facturado</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mt-1" id="kpi-monto">$0.00</h3>
+                    <span class="text-xs text-blue-600 font-semibold">100% del total filtrado</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Cobrado / Recuperado</p>
+                    <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="kpi-cobrado">$0.00</h3>
+                    <span class="text-xs text-emerald-600 font-bold" id="kpi-cobrado-pct">0.00% recuperado</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Saldo Pendiente</p>
+                    <h3 class="text-2xl font-bold text-red-600 mt-1" id="kpi-saldo">$0.00</h3>
+                    <span class="text-xs text-red-600 font-bold" id="kpi-saldo-pct">0.00% pendiente</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Efectividad de Cobro</p>
+                    <h3 class="text-2xl font-bold text-blue-600 mt-1" id="kpi-efectividad">0.0%</h3>
+                    <span class="text-xs text-gray-500" id="kpi-facturas-count">0 facturas procesadas</span>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS DAS2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-base font-bold text-gray-800 mb-4">% Participación por Servicio</h2>
+                    <canvas id="chartServicios" height="220"></canvas>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-base font-bold text-gray-800 mb-4">% Monto por Tipo de Pago</h2>
+                    <canvas id="chartPagos" height="220"></canvas>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-base font-bold text-gray-800 mb-4">% Distribución Pagados vs Pendientes</h2>
+                    <canvas id="chartEstados" height="220"></canvas>
+                </div>
+            </div>
+
+            <!-- TABLA DAS2 -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                    <h3 class="font-bold text-gray-800">Detalle Dinámico con Porcentajes</h3>
+                    <input type="text" id="search-das2" onkeyup="applyDashboardFilters()" placeholder="Buscar cliente o factura..." class="text-sm p-2 border border-gray-300 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="overflow-x-auto max-h-96">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-100 text-gray-700 border-b border-gray-200 sticky top-0">
+                            <tr>
+                                <th class="p-3">Factura</th>
+                                <th class="p-3">Mes</th>
+                                <th class="p-3">Cliente</th>
+                                <th class="p-3">Servicio</th>
+                                <th class="p-3">Forma de Pago</th>
+                                <th class="p-3">Monto Total</th>
+                                <th class="p-3">Saldo Pendiente</th>
+                                <th class="p-3">% Pendiente</th>
+                                <th class="p-3">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body-das2" class="divide-y divide-gray-100">
+                            <tr><td colspan="9" class="p-4 text-center text-gray-400">Carga el archivo DAS2.xlsx.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: INVENTARIO COMPLETO Y ROTACIÓN -->
+        <section id="tab-inventario" class="space-y-6">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <h1 class="text-2xl font-bold text-gray-800">Módulo de Inventario & Control de Rotación</h1>
+                
+                <!-- FILTROS DE INVENTARIO -->
+                <div class="flex flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 block">Nivel de Rotación:</label>
+                        <select id="filter-inv-rotacion" onchange="applyInventarioFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="TODOS">Todos</option>
+                            <option value="ALTA">Alta Rotación (Con Salidas)</option>
+                            <option value="SIN">Sin Rotación (Sin Ventas)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 block">Estado / Condición:</label>
+                        <select id="filter-inv-estado" onchange="applyInventarioFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="TODOS">Todos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 block">Marca:</label>
+                        <select id="filter-inv-marca" onchange="applyInventarioFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="TODOS">Todas</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btn-exportar-inventario-pdf" onclick="exportInventarioPDF()" class="self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        <span>Generar PDF</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TARJETAS KPI DE INVENTARIO -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Variedad de Equipos / Ítems</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mt-1" id="inv-kpi-total-items">0</h3>
+                    <span class="text-xs text-blue-600 font-semibold" id="inv-kpi-unidades-total">0 unidades en stock inicial</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Valor Total Invertido</p>
+                    <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="inv-kpi-costo-total">$0.00</h3>
+                    <span class="text-xs text-emerald-600 font-bold">Costo total acumulado</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Unidades Vendidas / Salidas</p>
+                    <h3 class="text-2xl font-bold text-indigo-600 mt-1" id="inv-kpi-vendidas">0</h3>
+                    <span class="text-xs text-indigo-600 font-bold" id="inv-kpi-stock-actual">0 unidades en stock actual</span>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Tasa de Rotación Global</p>
+                    <h3 class="text-2xl font-bold text-amber-600 mt-1" id="inv-kpi-rotacion-pct">0.0%</h3>
+                    <span class="text-xs text-gray-500">% de stock total despachado</span>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS DE INVENTARIO -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-base font-bold text-gray-800 mb-4">Stock Inic vs Unidades Vendidas por Estado</h2>
+                    <canvas id="chartInvRotacion" height="200"></canvas>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-base font-bold text-gray-800 mb-4">% Valor Invertido por Estado/Condición</h2>
+                    <canvas id="chartInvValor" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- TABLA DINÁMICA DE INVENTARIO CON ROTACIÓN -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                    <h3 class="font-bold text-gray-800">Tabla Dinámica de Equipos con Indicadores de Rotación</h3>
+                    <input type="text" id="search-inv" onkeyup="applyInventarioFilters()" placeholder="Buscar equipo, marca o modelo..." class="text-sm p-2 border border-gray-300 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="overflow-x-auto max-h-96">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-100 text-gray-700 border-b border-gray-200 sticky top-0">
+                            <tr>
+                                <th class="p-3">Descripción</th>
+                                <th class="p-3">Marca</th>
+                                <th class="p-3">Modelo</th>
+                                <th class="p-3">Estado</th>
+                                <th class="p-3">Cant. Inicial</th>
+                                <th class="p-3">Ventas / Salidas</th>
+                                <th class="p-3">Stock Actual</th>
+                                <th class="p-3">Costo Unit.</th>
+                                <th class="p-3">Costo Total</th>
+                                <th class="p-3">Rotación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body-inventario" class="divide-y divide-gray-100">
+                            <tr><td colspan="10" class="p-4 text-center text-gray-400">Carga el archivo INVENTARIO Loja para ver los datos.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: VENTAS AGOSTO (MEJORADA) -->
+        <section id="tab-ventas" class="hidden space-y-6">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                <h1 class="text-2xl font-bold text-gray-800">Módulo de Ventas Agosto</h1>
+                <div class="flex flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 block">Filtrar por Estado:</label>
+                        <select id="filter-ventas-estado" onchange="applyVentasFilters()" class="text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="TODOS">Todos</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btn-exportar-ventas-pdf" onclick="exportVentasDashboardPDF()" class="self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        <span>Generar PDF</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TARJETAS KPI VENTAS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Total Ventas (Facturado)</p>
+                    <h3 class="text-2xl font-bold text-gray-800 mt-1" id="kpi-ventas-total">$0.00</h3>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Costo Total</p>
+                    <h3 class="text-2xl font-bold text-red-600 mt-1" id="kpi-ventas-costo">$0.00</h3>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Utilidad Bruta</p>
+                    <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="kpi-ventas-utilidad-bruta">$0.00</h3>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-500 font-medium">Utilidad Neta</p>
+                    <h3 class="text-2xl font-bold text-blue-600 mt-1" id="kpi-ventas-utilidad-neta">$0.00</h3>
+                </div>
+            </div>
+
+            <!-- GRÁFICOS VENTAS -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-base font-bold text-gray-800 mb-4">Ventas por Cliente</h2>
+                    <canvas id="chartVentasCliente" height="200"></canvas>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <h2 class="text-base font-bold text-gray-800 mb-4">Composición de Costos</h2>
+                    <canvas id="chartVentasCostos" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- TABLA DE VENTAS -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                    <h3 class="font-bold text-gray-800">Detalle de Ventas Agosto</h3>
+                    <input type="text" id="search-ventas" onkeyup="applyVentasFilters()" placeholder="Buscar cliente o factura..." class="text-sm p-2 border border-gray-300 rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="overflow-x-auto max-h-96">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-gray-100 text-gray-700 border-b border-gray-200 sticky top-0">
+                            <tr id="ventas-table-head">
+                                <th class="p-3">Carga el archivo de ventas.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body-ventas" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        let rawDas2Data = [];
+        let rawInventarioData = [];
+        let rawVentasData = [];
+
+        let chartServicios, chartPagos, chartEstados;
+        let chartInvRotacion, chartInvValor;
+        let chartVentasCliente, chartVentasCostos;
+
+        const mesesNombres = {
+            1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio',
+            7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'
+        };
+
+        // ==========================================
+        // UTILIDADES (CORREGIDAS)
+        // ==========================================
+        function normalizeKey(str) {
+            return str.toUpperCase()
+                .replace(/\s+/g, '')
+                .replace(/\./g, '')
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        function parseNumber(val) {
+            // Convierte a número de forma robusta
+            if (typeof val === 'number') return val;
+            if (typeof val === 'string') {
+                // Elimina comas (posible separador de miles) y reemplaza coma decimal por punto
+                let clean = val.trim().replace(/,/g, '.').replace(/[^0-9.]/g, '');
+                // Si hay más de un punto, tomar solo el primero (caso raro)
+                let parts = clean.split('.');
+                if (parts.length > 2) {
+                    clean = parts[0] + '.' + parts.slice(1).join('');
+                }
+                let num = parseFloat(clean);
+                return isNaN(num) ? 0 : num;
+            }
+            return 0;
+        }
+
+        // ==========================================
+        // NAVEGACIÓN
+        // ==========================================
+        function switchTab(tabId) {
+            ['dashboard', 'inventario', 'ventas'].forEach(id => {
+                document.getElementById(`tab-${id}`).classList.add('hidden');
+                document.getElementById(`nav-${id}`).classList.remove('bg-blue-600', 'text-white');
+                document.getElementById(`nav-${id}`).classList.add('text-gray-300');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            activeNav.classList.add('bg-blue-600', 'text-white');
+            activeNav.classList.remove('text-gray-300');
+        }
+
+        // ==========================================
+        // CARGA PRINCIPAL DEL ARCHIVO
+        // ==========================================
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
+                if (rawRows.length === 0) return;
+
+                // 1. Detectar Ventas: buscar fila con "CLIENTE" y "FACTURA S/I"
+                let ventasHeaderIndex = -1;
+                for (let i = 0; i < Math.min(20, rawRows.length); i++) {
+                    const rowStr = rawRows[i].join(' ').toUpperCase();
+                    if (rowStr.includes('CLIENTE') && (rowStr.includes('FACTURA S/I') || rowStr.includes('FACTURASI'))) {
+                        ventasHeaderIndex = i;
+                        break;
+                    }
+                }
+
+                if (ventasHeaderIndex !== -1) {
+                    processVentasFromRows(rawRows, ventasHeaderIndex);
+                    switchTab('ventas');
+                    return;
+                }
+
+                // 2. Detectar DAS2
+                let isDas2 = false;
+                for (let i = 0; i < Math.min(20, rawRows.length); i++) {
+                    const rowStr = rawRows[i].join(' ').toUpperCase();
+                    if (rowStr.includes('FORMA DE PAGO') || rowStr.includes('TIPO DE SERVICIO') || rowStr.includes('NÚMERO DE FACTURA')) {
+                        isDas2 = true;
+                        break;
+                    }
+                }
+                if (isDas2) {
+                    const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                    processDAS2(jsonData);
+                    switchTab('dashboard');
+                    return;
+                }
+
+                // 3. Detectar Inventario (más estricto)
+                let isInventario = false;
+                for (let i = 0; i < Math.min(20, rawRows.length); i++) {
+                    const rowStr = rawRows[i].join(' ').toUpperCase();
+                    if (rowStr.includes('DESCRIPCION') && rowStr.includes('MARCA') && (rowStr.includes('COSTO') || rowStr.includes('CANTIDAD'))) {
+                        isInventario = true;
+                        break;
+                    }
+                }
+                if (isInventario) {
+                    processInventarioFile(rawRows);
+                    switchTab('inventario');
+                    return;
+                }
+
+                // 4. Fallback: tabla genérica
+                const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                processGenericTable(jsonData, 'table-body-ventas', 'ventas-table-head');
+                switchTab('ventas');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ==========================================
+        // PROCESAMIENTO MÓDULO VENTAS (CORREGIDO)
+        // ==========================================
+        function processVentasFromRows(rows, headerIndex) {
+            console.log('Archivo de Ventas detectado. Fila de encabezados:', headerIndex);
+
+            const headers = rows[headerIndex].map(h => h.toString().trim());
+            // Mapeo de columnas normalizadas
+            const colMap = {};
+            headers.forEach((h, idx) => {
+                const key = normalizeKey(h);
+                colMap[key] = idx;
+            });
+            console.log('Mapa de columnas:', colMap);
+
+            // Función getVal que normaliza automáticamente la clave
+            const getVal = (key) => {
+                const normalizedKey = normalizeKey(key);
+                const idx = colMap[normalizedKey];
+                if (idx === undefined) return undefined;
+                return rows[rowIndex][idx];
+            };
+
+            // Extraer datos desde la siguiente fila hasta "TOTALES"
+            const dataRows = [];
+            for (let i = headerIndex + 1; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row || row.length === 0) continue;
+                const firstCell = (row[0] || '').toString().trim().toUpperCase();
+                if (firstCell === 'TOTALES' || firstCell === 'TOTAL') break;
+                if (row.every(cell => cell === undefined || cell === null || cell === '')) continue;
+                dataRows.push(row);
+            }
+            console.log('Filas de datos extraídas:', dataRows.length);
+
+            rawVentasData = dataRows.map((row, idx) => {
+                // Asignamos rowIndex para que getVal pueda acceder
+                const rowIndex = headerIndex + 1 + idx;
+                // Re-definimos getVal con el rowIndex actual
+                const getRowVal = (key) => {
+                    const normalizedKey = normalizeKey(key);
+                    const colIdx = colMap[normalizedKey];
+                    if (colIdx === undefined) return undefined;
+                    return row[colIdx];
+                };
+
+                const cliente = getRowVal('CLIENTE') || '';
+                if (!cliente) return null;
+
+                // Extraer el valor de FACTURA S/I (monto de la factura)
+                const facturaRaw = getRowVal('FACTURA S/I');
+                const factura = parseNumber(facturaRaw);
+                console.log(`Fila ${idx+1}: cliente=${cliente}, facturaRaw=${facturaRaw}, factura=${factura}`);
+
+                const notaCred = getRowVal('NOTA CRED') || '';
+                const menosImp = parseNumber(getRowVal('MENOS IMP VENTAS') || 0);
+                const costoTotal = parseNumber(getRowVal('COSTO TOTAL') || 0);
+                const equipos = parseNumber(getRowVal('EQUIPOS') || 0);
+                const manoObra = parseNumber(getRowVal('MANO OB.') || getRowVal('MANOOB') || 0);
+                const materiales = parseNumber(getRowVal('MATERIALES') || 0);
+                const otros = parseNumber(getRowVal('OTROS') || 0);
+                const tecnico = parseNumber(getRowVal('TÉCNICO') || getRowVal('TECNICO') || 0);
+                const tc = parseNumber(getRowVal('T/C') || 0);
+                const margenDI = parseNumber(getRowVal('MARGEN D/I') || getRowVal('MARGEND/I') || 0);
+                const comision = parseNumber(getRowVal('COMISIÓN') || getRowVal('COMISION') || 0);
+                const comCierre = parseNumber(getRowVal('COM CIERRE') || getRowVal('COMCIERRE') || 0);
+                const asesoria = parseNumber(getRowVal('ASESORÍA') || getRowVal('ASESORIA') || 0);
+                const utilidadBruta = parseNumber(getRowVal('UTILIDAD BRUTA') || getRowVal('UTILIDADBRUTA') || 0);
+                const cargaFinan = parseNumber(getRowVal('CARGA FINAN') || getRowVal('CARGAFINAN') || 0);
+                const utilidadNeta = parseNumber(getRowVal('UTILIDAD NETA') || getRowVal('UTILIDADNETA') || 0);
+                const estado = getRowVal('ESTADO') || '';
+
+                return {
+                    cliente, factura, notaCred, menosImp, costoTotal,
+                    equipos, manoObra, materiales, otros, tecnico,
+                    tc, margenDI, comision, comCierre, asesoria,
+                    utilidadBruta, cargaFinan, utilidadNeta, estado
+                };
+            }).filter(d => d !== null);
+
+            console.log('Datos de ventas procesados:', rawVentasData.length);
+
+            // Poblar filtro de estado
+            const estados = ['TODOS', ...new Set(rawVentasData.map(d => d.estado).filter(e => e))];
+            document.getElementById('filter-ventas-estado').innerHTML = estados.map(e => `<option value="${e}">${e}</option>`).join('');
+
+            applyVentasFilters();
+        }
+
+        function applyVentasFilters() {
+            console.log('Aplicando filtros.');
+            const estadoFilter = document.getElementById('filter-ventas-estado').value;
+            const searchFilter = document.getElementById('search-ventas').value.toLowerCase();
+
+            const filtered = rawVentasData.filter(item => {
+                const matchEstado = estadoFilter === 'TODOS' || item.estado === estadoFilter;
+                const matchSearch = item.cliente.toLowerCase().includes(searchFilter) ||
+                                    item.factura.toString().includes(searchFilter);
+                return matchEstado && matchSearch;
+            });
+
+            console.log('Datos filtrados:', filtered.length);
+
+            // KPIs
+            const totalVentas = filtered.reduce((sum, d) => sum + d.factura, 0);
+            const costoTotal = filtered.reduce((sum, d) => sum + d.costoTotal, 0);
+            const utilidadBruta = filtered.reduce((sum, d) => sum + d.utilidadBruta, 0);
+            const utilidadNeta = filtered.reduce((sum, d) => sum + d.utilidadNeta, 0);
+
+            console.log(`Total Ventas: ${totalVentas}, Costo Total: ${costoTotal}, Utilidad Bruta: ${utilidadBruta}, Utilidad Neta: ${utilidadNeta}`);
+
+            document.getElementById('kpi-ventas-total').textContent = `$${totalVentas.toFixed(2)}`;
+            document.getElementById('kpi-ventas-costo').textContent = `$${costoTotal.toFixed(2)}`;
+            document.getElementById('kpi-ventas-utilidad-bruta').textContent = `$${utilidadBruta.toFixed(2)}`;
+            document.getElementById('kpi-ventas-utilidad-neta').textContent = `$${utilidadNeta.toFixed(2)}`;
+
+            renderVentasTable(filtered);
+            renderVentasCharts(filtered);
+        }
+
+        // ==========================================
+        // INFORME MENSUAL DE VENTAS EN PDF
+        // ==========================================
+        async function exportVentasDashboardPDF() {
+            if (!rawVentasData.length) {
+                alert('Carga primero el archivo de ventas para generar el informe PDF.');
+                return;
+            }
+
+            const button = document.getElementById('btn-exportar-ventas-pdf');
+            const originalButtonContent = button.innerHTML;
+            const estadoFilter = document.getElementById('filter-ventas-estado').value;
+            const searchFilter = document.getElementById('search-ventas').value.trim().toLowerCase();
+            const data = rawVentasData.filter(item => {
+                const matchEstado = estadoFilter === 'TODOS' || item.estado === estadoFilter;
+                const matchSearch = String(item.cliente || '').toLowerCase().includes(searchFilter) ||
+                                    String(item.factura || '').toLowerCase().includes(searchFilter);
+                return matchEstado && matchSearch;
+            });
+
+            if (!data.length) {
+                alert('No hay datos con los filtros seleccionados para generar el informe.');
+                return;
+            }
+
+            const money = (value) => `$${(Number(value) || 0).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })}`;
+            const text = (value) => value === undefined || value === null || value === '' ? '-' : String(value);
+            const sum = (key) => data.reduce((total, row) => total + (Number(row[key]) || 0), 0);
+            const formatDate = new Date().toLocaleDateString('es-EC', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const filterLabel = estadoFilter === 'TODOS' ? 'Todos los estados' : estadoFilter;
+            const searchLabel = searchFilter ? document.getElementById('search-ventas').value.trim() : 'Sin búsqueda';
+
+            try {
+                button.disabled = true;
+                button.classList.add('opacity-75', 'cursor-wait');
+                button.innerHTML = '<span>Generando informe...</span>';
+
+                // Da tiempo a Chart.js para terminar de pintar los gráficos actuales.
+                await new Promise(resolve => setTimeout(resolve, 350));
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                if (typeof pdf.autoTable !== 'function') {
+                    throw new Error('No se pudo cargar el módulo de tablas para PDF.');
+                }
+
+                const pageWidth = 297;
+                const pageHeight = 210;
+                const margin = 14;
+                const colors = {
+                    navy: [15, 23, 42],
+                    blue: [37, 99, 235],
+                    green: [5, 150, 105],
+                    red: [220, 38, 38],
+                    amber: [217, 119, 6],
+                    slate: [71, 85, 105],
+                    light: [241, 245, 249],
+                    border: [226, 232, 240]
+                };
+
+                pdf.setProperties({
+                    title: 'Informe Mensual de Ventas - Agosto',
+                    subject: 'Informe mensual de ventas ADASMEG Loja',
+                    author: 'Sistema de Gestión ADASMEG Loja'
+                });
+
+                const drawHeader = (title, subtitle) => {
+                    pdf.setFillColor(...colors.navy);
+                    pdf.rect(0, 0, pageWidth, 23, 'F');
+                    pdf.setFillColor(...colors.blue);
+                    pdf.rect(0, 23, pageWidth, 1.5, 'F');
+                    pdf.setTextColor(255, 255, 255);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(13);
+                    pdf.text('ADASMEG LOJA', margin, 10);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(8.5);
+                    pdf.text(title, margin, 16);
+                    pdf.setTextColor(203, 213, 225);
+                    pdf.text(subtitle, pageWidth - margin, 16, { align: 'right' });
+                };
+
+                const drawFooter = () => {
+                    const totalPages = pdf.internal.getNumberOfPages();
+                    for (let page = 1; page <= totalPages; page++) {
+                        pdf.setPage(page);
+                        pdf.setDrawColor(...colors.border);
+                        pdf.setLineWidth(0.3);
+                        pdf.line(margin, pageHeight - 9, pageWidth - margin, pageHeight - 9);
+                        pdf.setTextColor(...colors.slate);
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.setFontSize(7.5);
+                        pdf.text('Informe mensual de ventas • ADASMEG Loja', margin, pageHeight - 4);
+                        pdf.text(`Página ${page} de ${totalPages}`, pageWidth - margin, pageHeight - 4, { align: 'right' });
+                    }
+                };
+
+                const drawKpi = (x, y, width, label, value, color) => {
+                    pdf.setFillColor(255, 255, 255);
+                    pdf.setDrawColor(...colors.border);
+                    pdf.roundedRect(x, y, width, 27, 2.5, 2.5, 'FD');
+                    pdf.setFillColor(...color);
+                    pdf.roundedRect(x, y, 3, 27, 1.5, 1.5, 'F');
+                    pdf.setTextColor(...colors.slate);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(8);
+                    pdf.text(label, x + 8, y + 9);
+                    pdf.setTextColor(...colors.navy);
+                    pdf.setFontSize(14);
+                    pdf.text(value, x + 8, y + 20);
+                };
+
+                const drawChartCard = (imageData, title, x, y, width, height) => {
+                    pdf.setFillColor(255, 255, 255);
+                    pdf.setDrawColor(...colors.border);
+                    pdf.roundedRect(x, y, width, height, 2.5, 2.5, 'FD');
+                    pdf.setTextColor(...colors.navy);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(8.5);
+                    pdf.text(title, x + 5, y + 8);
+                    if (imageData) {
+                        pdf.addImage(imageData, 'PNG', x + 4, y + 11, width - 8, height - 15);
+                    }
+                };
+
+                // Página 1: portada ejecutiva y gráficos.
+                pdf.setFillColor(248, 250, 252);
+                pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+                pdf.setFillColor(...colors.navy);
+                pdf.rect(0, 0, pageWidth, 48, 'F');
+                pdf.setFillColor(...colors.blue);
+                pdf.rect(0, 46, pageWidth, 2, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(11);
+                pdf.text('ADASMEG LOJA', margin, 13);
+                pdf.setFontSize(24);
+                pdf.text('INFORME MENSUAL DE VENTAS', margin, 29);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(11);
+                pdf.setTextColor(191, 219, 254);
+                pdf.text('AGOSTO', margin, 40);
+                pdf.setTextColor(226, 232, 240);
+                pdf.setFontSize(8.5);
+                pdf.text(`Generado el ${formatDate}`, pageWidth - margin, 19, { align: 'right' });
+                pdf.text('Presentación ejecutiva', pageWidth - margin, 29, { align: 'right' });
+
+                pdf.setTextColor(...colors.navy);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(10);
+                pdf.text('Resumen ejecutivo', margin, 60);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(8.5);
+                pdf.setTextColor(...colors.slate);
+                pdf.text(`Registros analizados: ${data.length}  •  Estado: ${filterLabel}  •  Búsqueda: ${searchLabel}`, margin, 67);
+
+                const cardGap = 5;
+                const cardWidth = (pageWidth - (margin * 2) - (cardGap * 3)) / 4;
+                const cardY = 73;
+                drawKpi(margin, cardY, cardWidth, 'TOTAL VENTAS', money(sum('factura')), colors.blue);
+                drawKpi(margin + cardWidth + cardGap, cardY, cardWidth, 'COSTO TOTAL', money(sum('costoTotal')), colors.red);
+                drawKpi(margin + ((cardWidth + cardGap) * 2), cardY, cardWidth, 'UTILIDAD BRUTA', money(sum('utilidadBruta')), colors.green);
+                drawKpi(margin + ((cardWidth + cardGap) * 3), cardY, cardWidth, 'UTILIDAD NETA', money(sum('utilidadNeta')), colors.amber);
+
+                const chartClient = document.getElementById('chartVentasCliente');
+                const chartCosts = document.getElementById('chartVentasCostos');
+                const clientImage = chartClient ? chartClient.toDataURL('image/png', 1.0) : null;
+                const costsImage = chartCosts ? chartCosts.toDataURL('image/png', 1.0) : null;
+                const chartY = 110;
+                const chartWidth = (pageWidth - (margin * 2) - cardGap) / 2;
+                drawChartCard(clientImage, 'Ventas facturadas por cliente', margin, chartY, chartWidth, 76);
+                drawChartCard(costsImage, 'Composición de costos', margin + chartWidth + cardGap, chartY, chartWidth, 76);
+
+                // Página 2: detalle financiero, con paginación automática.
+                pdf.addPage();
+                pdf.autoTable({
+                    startY: 31,
+                    margin: { top: 29, right: margin, bottom: 15, left: margin },
+                    head: [[
+                        'Cliente', 'Factura S/I', 'Nota Cred.', 'Menos Imp. Ventas',
+                        'Costo Total', 'Utilidad Bruta', 'Carga Financ.', 'Utilidad Neta', 'Estado'
+                    ]],
+                    body: data.map(row => [
+                        text(row.cliente), text(row.factura), text(row.notaCred),
+                        money(row.menosImp), money(row.costoTotal), money(row.utilidadBruta),
+                        money(row.cargaFinan), money(row.utilidadNeta), text(row.estado)
+                    ]),
+                    foot: [[
+                        'TOTAL GENERAL', '', '', money(sum('menosImp')), money(sum('costoTotal')),
+                        money(sum('utilidadBruta')), money(sum('cargaFinan')), money(sum('utilidadNeta')), ''
+                    ]],
+                    theme: 'grid',
+                    styles: {
+                        font: 'helvetica',
+                        fontSize: 7,
+                        cellPadding: 2.2,
+                        textColor: colors.navy,
+                        lineColor: colors.border,
+                        lineWidth: 0.25,
+                        overflow: 'linebreak'
+                    },
+                    headStyles: {
+                        fillColor: colors.navy,
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold',
+                        fontSize: 7
+                    },
+                    footStyles: {
+                        fillColor: [219, 234, 254],
+                        textColor: colors.navy,
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: { fillColor: [248, 250, 252] },
+                    columnStyles: {
+                        0: { cellWidth: 47 },
+                        1: { cellWidth: 25 },
+                        2: { cellWidth: 23 },
+                        3: { cellWidth: 28, halign: 'right' },
+                        4: { cellWidth: 27, halign: 'right' },
+                        5: { cellWidth: 29, halign: 'right' },
+                        6: { cellWidth: 27, halign: 'right' },
+                        7: { cellWidth: 29, halign: 'right' },
+                        8: { cellWidth: 24 }
+                    },
+                    didDrawPage: () => drawHeader('Detalle financiero de ventas', 'Agosto • Valores en USD')
+                });
+
+                // Página 3: desglose completo de costos y componentes.
+                pdf.addPage();
+                pdf.autoTable({
+                    startY: 31,
+                    margin: { top: 29, right: margin, bottom: 15, left: margin },
+                    head: [[
+                        'Cliente', 'Equipos', 'Mano Obra', 'Materiales', 'Otros',
+                        'Técnico', 'T/C', 'Margen D/I', 'Comisión', 'Com Cierre', 'Asesoría'
+                    ]],
+                    body: data.map(row => [
+                        text(row.cliente), money(row.equipos), money(row.manoObra),
+                        money(row.materiales), money(row.otros), money(row.tecnico),
+                        money(row.tc), money(row.margenDI), money(row.comision),
+                        money(row.comCierre), money(row.asesoria)
+                    ]),
+                    foot: [[
+                        'TOTAL GENERAL', money(sum('equipos')), money(sum('manoObra')),
+                        money(sum('materiales')), money(sum('otros')), money(sum('tecnico')),
+                        money(sum('tc')), money(sum('margenDI')), money(sum('comision')),
+                        money(sum('comCierre')), money(sum('asesoria'))
+                    ]],
+                    theme: 'grid',
+                    styles: {
+                        font: 'helvetica',
+                        fontSize: 6.7,
+                        cellPadding: 2.1,
+                        textColor: colors.navy,
+                        lineColor: colors.border,
+                        lineWidth: 0.25,
+                        overflow: 'linebreak'
+                    },
+                    headStyles: {
+                        fillColor: colors.navy,
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold',
+                        fontSize: 6.7
+                    },
+                    footStyles: {
+                        fillColor: [220, 252, 231],
+                        textColor: colors.navy,
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: { fillColor: [248, 250, 252] },
+                    columnStyles: {
+                        0: { cellWidth: 52 },
+                        1: { cellWidth: 21, halign: 'right' },
+                        2: { cellWidth: 22, halign: 'right' },
+                        3: { cellWidth: 22, halign: 'right' },
+                        4: { cellWidth: 19, halign: 'right' },
+                        5: { cellWidth: 20, halign: 'right' },
+                        6: { cellWidth: 19, halign: 'right' },
+                        7: { cellWidth: 22, halign: 'right' },
+                        8: { cellWidth: 20, halign: 'right' },
+                        9: { cellWidth: 22, halign: 'right' },
+                        10: { cellWidth: 23, halign: 'right' }
+                    },
+                    didDrawPage: () => drawHeader('Desglose de costos y componentes', 'Agosto • Valores en USD')
+                });
+
+                drawFooter();
+                const fechaArchivo = new Date().toISOString().slice(0, 10);
+                pdf.save(`informe_mensual_ventas_agosto_${fechaArchivo}.pdf`);
+            } catch (error) {
+                console.error('Error al generar el informe PDF:', error);
+                alert('No se pudo generar el informe PDF. Revisa la consola del navegador para más detalles.');
+            } finally {
+                button.disabled = false;
+                button.classList.remove('opacity-75', 'cursor-wait');
+                button.innerHTML = originalButtonContent;
+                lucide.createIcons();
+            }
+        }
+
+        // ==========================================
+        // HERRAMIENTAS COMPARTIDAS PARA INFORMES PDF
+        // ==========================================
+        const PDF_REPORT_COLORS = {
+            navy: [15, 23, 42],
+            blue: [37, 99, 235],
+            green: [5, 150, 105],
+            red: [220, 38, 38],
+            amber: [217, 119, 6],
+            slate: [71, 85, 105],
+            light: [241, 245, 249],
+            border: [226, 232, 240]
+        };
+
+        function formatPdfMoney(value) {
+            return `$${(Number(value) || 0).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })}`;
+        }
+
+        function formatPdfText(value) {
+            return value === undefined || value === null || value === '' ? '-' : String(value);
+        }
+
+        function getPdfDate() {
+            return new Date().toLocaleDateString('es-EC', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function drawStructuredPdfHeader(pdf, title, subtitle) {
+            const pageWidth = 297;
+            const margin = 14;
+            pdf.setFillColor(...PDF_REPORT_COLORS.navy);
+            pdf.rect(0, 0, pageWidth, 23, 'F');
+            pdf.setFillColor(...PDF_REPORT_COLORS.blue);
+            pdf.rect(0, 23, pageWidth, 1.5, 'F');
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(13);
+            pdf.text('ADASMEG LOJA', margin, 10);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8.5);
+            pdf.text(title, margin, 16);
+            pdf.setTextColor(203, 213, 225);
+            pdf.text(subtitle, pageWidth - margin, 16, { align: 'right' });
+        }
+
+        function drawStructuredPdfFooter(pdf) {
+            const pageWidth = 297;
+            const pageHeight = 210;
+            const margin = 14;
+            const totalPages = pdf.internal.getNumberOfPages();
+            for (let page = 1; page <= totalPages; page++) {
+                pdf.setPage(page);
+                pdf.setDrawColor(...PDF_REPORT_COLORS.border);
+                pdf.setLineWidth(0.3);
+                pdf.line(margin, pageHeight - 9, pageWidth - margin, pageHeight - 9);
+                pdf.setTextColor(...PDF_REPORT_COLORS.slate);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(7.5);
+                pdf.text('Informe mensual • ADASMEG Loja', margin, pageHeight - 4);
+                pdf.text(`Página ${page} de ${totalPages}`, pageWidth - margin, pageHeight - 4, { align: 'right' });
+            }
+        }
+
+        function drawStructuredPdfKpi(pdf, x, y, width, label, value, color) {
+            pdf.setFillColor(255, 255, 255);
+            pdf.setDrawColor(...PDF_REPORT_COLORS.border);
+            pdf.roundedRect(x, y, width, 27, 2.5, 2.5, 'FD');
+            pdf.setFillColor(...color);
+            pdf.roundedRect(x, y, 3, 27, 1.5, 1.5, 'F');
+            pdf.setTextColor(...PDF_REPORT_COLORS.slate);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(8);
+            pdf.text(label, x + 8, y + 9);
+            pdf.setTextColor(...PDF_REPORT_COLORS.navy);
+            pdf.setFontSize(14);
+            pdf.text(value, x + 8, y + 20);
+        }
+
+        function drawStructuredPdfChart(pdf, imageData, title, x, y, width, height) {
+            pdf.setFillColor(255, 255, 255);
+            pdf.setDrawColor(...PDF_REPORT_COLORS.border);
+            pdf.roundedRect(x, y, width, height, 2.5, 2.5, 'FD');
+            pdf.setTextColor(...PDF_REPORT_COLORS.navy);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(8.2);
+            pdf.text(title, x + 5, y + 8);
+            if (imageData) {
+                pdf.addImage(imageData, 'PNG', x + 4, y + 11, width - 8, height - 15);
+            }
+        }
+
+        // ==========================================
+        // INFORME PDF DE FACTURAS Y SERVICIOS
+        // ==========================================
+        async function exportDashboardPDF() {
+            if (!rawDas2Data.length) {
+                alert('Carga primero el archivo de cartera para generar el informe PDF.');
+                return;
+            }
+
+            const button = document.getElementById('btn-exportar-dashboard-pdf');
+            const originalButtonContent = button.innerHTML;
+            const mesFilter = document.getElementById('filter-mes').value;
+            const servicioFilter = document.getElementById('filter-servicio').value;
+            const pagoFilter = document.getElementById('filter-pago').value;
+            const estadoFilter = document.getElementById('filter-estado').value;
+            const searchFilter = document.getElementById('search-das2').value.trim().toLowerCase();
+
+            const data = rawDas2Data.filter(item => {
+                const matchMes = mesFilter === 'TODOS' || item.mes === mesFilter;
+                const matchServicio = servicioFilter === 'TODOS' || item.servicio === servicioFilter;
+                const matchPago = pagoFilter === 'TODOS' || item.pago === pagoFilter;
+                const matchEstado = estadoFilter === 'TODOS' || item.estado === estadoFilter;
+                const matchSearch = String(item.cliente || '').toLowerCase().includes(searchFilter) ||
+                                    String(item.factura || '').toLowerCase().includes(searchFilter);
+                return matchMes && matchServicio && matchPago && matchEstado && matchSearch;
+            });
+
+            if (!data.length) {
+                alert('No hay datos con los filtros seleccionados para generar el informe.');
+                return;
+            }
+
+            const sum = (key) => data.reduce((total, row) => total + (Number(row[key]) || 0), 0);
+            const totalMonto = sum('monto');
+            const totalSaldo = sum('saldo');
+            const totalCobrado = totalMonto - totalSaldo;
+            const efectividad = totalMonto > 0 ? ((totalCobrado / totalMonto) * 100) : 0;
+            const filterSummary = `Mes: ${mesFilter} • Servicio: ${servicioFilter} • Pago: ${pagoFilter} • Estado: ${estadoFilter}`;
+
+            try {
+                button.disabled = true;
+                button.classList.add('opacity-75', 'cursor-wait');
+                button.innerHTML = '<span>Generando informe...</span>';
+                await new Promise(resolve => setTimeout(resolve, 350));
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                if (typeof pdf.autoTable !== 'function') {
+                    throw new Error('No se pudo cargar el módulo de tablas para PDF.');
+                }
+
+                const pageWidth = 297;
+                const margin = 14;
+                const gap = 5;
+                const date = getPdfDate();
+
+                // Página 1: resumen ejecutivo de cartera y servicios.
+                pdf.setFillColor(248, 250, 252);
+                pdf.rect(0, 0, pageWidth, 210, 'F');
+                pdf.setFillColor(...PDF_REPORT_COLORS.navy);
+                pdf.rect(0, 0, pageWidth, 48, 'F');
+                pdf.setFillColor(...PDF_REPORT_COLORS.blue);
+                pdf.rect(0, 46, pageWidth, 2, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(11);
+                pdf.text('ADASMEG LOJA', margin, 13);
+                pdf.setFontSize(23);
+                pdf.text('INFORME DE FACTURAS Y SERVICIOS', margin, 29);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(10.5);
+                pdf.setTextColor(191, 219, 254);
+                pdf.text('CARTERA Y RECUPERACIÓN', margin, 40);
+                pdf.setTextColor(226, 232, 240);
+                pdf.setFontSize(8.5);
+                pdf.text(`Generado el ${date}`, pageWidth - margin, 19, { align: 'right' });
+                pdf.text('Presentación ejecutiva', pageWidth - margin, 29, { align: 'right' });
+
+                pdf.setTextColor(...PDF_REPORT_COLORS.navy);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(10);
+                pdf.text('Resumen ejecutivo', margin, 60);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(7.8);
+                pdf.setTextColor(...PDF_REPORT_COLORS.slate);
+                pdf.text(`${filterSummary} • Registros: ${data.length}`, margin, 67);
+
+                const cardWidth = (pageWidth - (margin * 2) - (gap * 3)) / 4;
+                const cardY = 73;
+                drawStructuredPdfKpi(pdf, margin, cardY, cardWidth, 'MONTO FACTURADO', formatPdfMoney(totalMonto), PDF_REPORT_COLORS.blue);
+                drawStructuredPdfKpi(pdf, margin + cardWidth + gap, cardY, cardWidth, 'COBRADO / RECUPERADO', formatPdfMoney(totalCobrado), PDF_REPORT_COLORS.green);
+                drawStructuredPdfKpi(pdf, margin + ((cardWidth + gap) * 2), cardY, cardWidth, 'SALDO PENDIENTE', formatPdfMoney(totalSaldo), PDF_REPORT_COLORS.red);
+                drawStructuredPdfKpi(pdf, margin + ((cardWidth + gap) * 3), cardY, cardWidth, 'EFECTIVIDAD DE COBRO', `${efectividad.toFixed(1)}%`, PDF_REPORT_COLORS.amber);
+
+                const chartWidth = (pageWidth - (margin * 2) - (gap * 2)) / 3;
+                const chartY = 110;
+                const chartServicios = document.getElementById('chartServicios');
+                const chartPagos = document.getElementById('chartPagos');
+                const chartEstados = document.getElementById('chartEstados');
+                drawStructuredPdfChart(pdf, chartServicios ? chartServicios.toDataURL('image/png', 1.0) : null, 'Participación por servicio', margin, chartY, chartWidth, 76);
+                drawStructuredPdfChart(pdf, chartPagos ? chartPagos.toDataURL('image/png', 1.0) : null, 'Monto por tipo de pago', margin + chartWidth + gap, chartY, chartWidth, 76);
+                drawStructuredPdfChart(pdf, chartEstados ? chartEstados.toDataURL('image/png', 1.0) : null, 'Pagados vs. pendientes', margin + ((chartWidth + gap) * 2), chartY, chartWidth, 76);
+
+                // Página 2: detalle completo de facturas y servicios.
+                pdf.addPage();
+                pdf.autoTable({
+                    startY: 31,
+                    margin: { top: 29, right: margin, bottom: 15, left: margin },
+                    head: [['Factura', 'Mes', 'Cliente', 'Servicio', 'Forma de Pago', 'Monto Total', 'Saldo Pendiente', '% Pendiente', 'Estado']],
+                    body: data.map(row => [
+                        formatPdfText(row.factura), formatPdfText(row.mes), formatPdfText(row.cliente),
+                        formatPdfText(row.servicio), formatPdfText(row.pago), formatPdfMoney(row.monto),
+                        formatPdfMoney(row.saldo), `${(Number(row.pctSaldo) || 0).toFixed(1)}%`, formatPdfText(row.estado)
+                    ]),
+                    foot: [['TOTAL GENERAL', '', '', '', '', formatPdfMoney(totalMonto), formatPdfMoney(totalSaldo), `${totalMonto > 0 ? ((totalSaldo / totalMonto) * 100).toFixed(1) : '0.0'}%`, '']],
+                    theme: 'grid',
+                    styles: {
+                        font: 'helvetica',
+                        fontSize: 7,
+                        cellPadding: 2.2,
+                        textColor: PDF_REPORT_COLORS.navy,
+                        lineColor: PDF_REPORT_COLORS.border,
+                        lineWidth: 0.25,
+                        overflow: 'linebreak'
+                    },
+                    headStyles: {
+                        fillColor: PDF_REPORT_COLORS.navy,
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold',
+                        fontSize: 7
+                    },
+                    footStyles: {
+                        fillColor: [219, 234, 254],
+                        textColor: PDF_REPORT_COLORS.navy,
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: { fillColor: [248, 250, 252] },
+                    columnStyles: {
+                        0: { cellWidth: 24 },
+                        1: { cellWidth: 20 },
+                        2: { cellWidth: 52 },
+                        3: { cellWidth: 30 },
+                        4: { cellWidth: 31 },
+                        5: { cellWidth: 29, halign: 'right' },
+                        6: { cellWidth: 29, halign: 'right' },
+                        7: { cellWidth: 24, halign: 'right' },
+                        8: { cellWidth: 25 }
+                    },
+                    didDrawPage: () => drawStructuredPdfHeader(pdf, 'Detalle de facturas y servicios', 'Cartera • Valores en USD')
+                });
+
+                drawStructuredPdfFooter(pdf);
+                pdf.save(`informe_facturas_servicios_${new Date().toISOString().slice(0, 10)}.pdf`);
+            } catch (error) {
+                console.error('Error al generar el informe de facturas:', error);
+                alert('No se pudo generar el informe PDF. Revisa la consola del navegador para más detalles.');
+            } finally {
+                button.disabled = false;
+                button.classList.remove('opacity-75', 'cursor-wait');
+                button.innerHTML = originalButtonContent;
+                lucide.createIcons();
+            }
+        }
+
+        // ==========================================
+        // INFORME PDF DE INVENTARIO Y ROTACIÓN
+        // ==========================================
+        async function exportInventarioPDF() {
+            if (!rawInventarioData.length) {
+                alert('Carga primero el archivo de inventario para generar el informe PDF.');
+                return;
+            }
+
+            const button = document.getElementById('btn-exportar-inventario-pdf');
+            const originalButtonContent = button.innerHTML;
+            const rotacionFilter = document.getElementById('filter-inv-rotacion').value;
+            const estadoFilter = document.getElementById('filter-inv-estado').value;
+            const marcaFilter = document.getElementById('filter-inv-marca').value;
+            const searchFilter = document.getElementById('search-inv').value.trim().toLowerCase();
+
+            const data = rawInventarioData.filter(item => {
+                const matchRot = rotacionFilter === 'TODOS' || item.rotacionTag === rotacionFilter;
+                const matchEstado = estadoFilter === 'TODOS' || item.estado === estadoFilter;
+                const matchMarca = marcaFilter === 'TODOS' || item.marca === marcaFilter;
+                const matchSearch = String(item.descripcion || '').toLowerCase().includes(searchFilter) ||
+                                    String(item.marca || '').toLowerCase().includes(searchFilter) ||
+                                    String(item.modelo || '').toLowerCase().includes(searchFilter);
+                return matchRot && matchEstado && matchMarca && matchSearch;
+            });
+
+            if (!data.length) {
+                alert('No hay inventario con los filtros seleccionados para generar el informe.');
+                return;
+            }
+
+            const sum = (key) => data.reduce((total, row) => total + (Number(row[key]) || 0), 0);
+            const totalItems = data.length;
+            const totalInicial = sum('cantInicial');
+            const totalVendidas = sum('ventasSalidas');
+            const totalStock = sum('stockActual');
+            const totalCosto = sum('costoTotal');
+            const rotacionGlobal = totalInicial > 0 ? ((totalVendidas / totalInicial) * 100) : 0;
+            const filterSummary = `Rotación: ${rotacionFilter} • Estado: ${estadoFilter} • Marca: ${marcaFilter} • Registros: ${data.length}`;
+
+            try {
+                button.disabled = true;
+                button.classList.add('opacity-75', 'cursor-wait');
+                button.innerHTML = '<span>Generando informe...</span>';
+                await new Promise(resolve => setTimeout(resolve, 350));
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                if (typeof pdf.autoTable !== 'function') {
+                    throw new Error('No se pudo cargar el módulo de tablas para PDF.');
+                }
+
+                const pageWidth = 297;
+                const margin = 14;
+                const gap = 5;
+                const date = getPdfDate();
+
+                // Página 1: resumen ejecutivo de inventario.
+                pdf.setFillColor(248, 250, 252);
+                pdf.rect(0, 0, pageWidth, 210, 'F');
+                pdf.setFillColor(...PDF_REPORT_COLORS.navy);
+                pdf.rect(0, 0, pageWidth, 48, 'F');
+                pdf.setFillColor(...PDF_REPORT_COLORS.blue);
+                pdf.rect(0, 46, pageWidth, 2, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(11);
+                pdf.text('ADASMEG LOJA', margin, 13);
+                pdf.setFontSize(23);
+                pdf.text('INFORME DE INVENTARIO Y ROTACIÓN', margin, 29);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(10.5);
+                pdf.setTextColor(191, 219, 254);
+                pdf.text('CONTROL DE EXISTENCIAS', margin, 40);
+                pdf.setTextColor(226, 232, 240);
+                pdf.setFontSize(8.5);
+                pdf.text(`Generado el ${date}`, pageWidth - margin, 19, { align: 'right' });
+                pdf.text('Presentación ejecutiva', pageWidth - margin, 29, { align: 'right' });
+
+                pdf.setTextColor(...PDF_REPORT_COLORS.navy);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(10);
+                pdf.text('Resumen ejecutivo', margin, 60);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(7.8);
+                pdf.setTextColor(...PDF_REPORT_COLORS.slate);
+                pdf.text(filterSummary, margin, 67);
+
+                const cardWidth = (pageWidth - (margin * 2) - (gap * 3)) / 4;
+                const cardY = 73;
+                drawStructuredPdfKpi(pdf, margin, cardY, cardWidth, 'VARIEDAD DE ÍTEMS', String(totalItems), PDF_REPORT_COLORS.blue);
+                drawStructuredPdfKpi(pdf, margin + cardWidth + gap, cardY, cardWidth, 'VALOR INVERTIDO', formatPdfMoney(totalCosto), PDF_REPORT_COLORS.green);
+                drawStructuredPdfKpi(pdf, margin + ((cardWidth + gap) * 2), cardY, cardWidth, 'UNIDADES VENDIDAS', String(totalVendidas), PDF_REPORT_COLORS.red);
+                drawStructuredPdfKpi(pdf, margin + ((cardWidth + gap) * 3), cardY, cardWidth, 'ROTACIÓN GLOBAL', `${rotacionGlobal.toFixed(1)}%`, PDF_REPORT_COLORS.amber);
+
+                const chartWidth = (pageWidth - (margin * 2) - gap) / 2;
+                const chartY = 110;
+                const chartRotacion = document.getElementById('chartInvRotacion');
+                const chartValor = document.getElementById('chartInvValor');
+                drawStructuredPdfChart(pdf, chartRotacion ? chartRotacion.toDataURL('image/png', 1.0) : null, 'Stock inicial vs. unidades vendidas', margin, chartY, chartWidth, 76);
+                drawStructuredPdfChart(pdf, chartValor ? chartValor.toDataURL('image/png', 1.0) : null, 'Valor invertido por estado / condición', margin + chartWidth + gap, chartY, chartWidth, 76);
+
+                // Página 2: detalle completo de inventario y rotación.
+                pdf.addPage();
+                pdf.autoTable({
+                    startY: 31,
+                    margin: { top: 29, right: margin, bottom: 15, left: margin },
+                    head: [['Descripción', 'Marca', 'Modelo', 'Estado', 'Cant. Inicial', 'Ventas / Salidas', 'Stock Actual', 'Costo Unit.', 'Costo Total', 'Rotación']],
+                    body: data.map(row => [
+                        formatPdfText(row.descripcion), formatPdfText(row.marca), formatPdfText(row.modelo),
+                        formatPdfText(row.estado), String(row.cantInicial), String(row.ventasSalidas),
+                        String(row.stockActual), formatPdfMoney(row.costoUnit), formatPdfMoney(row.costoTotal),
+                        `${(Number(row.pctRotacion) || 0).toFixed(1)}%`
+                    ]),
+                    foot: [['TOTAL GENERAL', '', '', '', String(totalInicial), String(totalVendidas), String(totalStock), '', formatPdfMoney(totalCosto), `${rotacionGlobal.toFixed(1)}%`]],
+                    theme: 'grid',
+                    styles: {
+                        font: 'helvetica',
+                        fontSize: 6.8,
+                        cellPadding: 2.1,
+                        textColor: PDF_REPORT_COLORS.navy,
+                        lineColor: PDF_REPORT_COLORS.border,
+                        lineWidth: 0.25,
+                        overflow: 'linebreak'
+                    },
+                    headStyles: {
+                        fillColor: PDF_REPORT_COLORS.navy,
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold',
+                        fontSize: 6.8
+                    },
+                    footStyles: {
+                        fillColor: [220, 252, 231],
+                        textColor: PDF_REPORT_COLORS.navy,
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: { fillColor: [248, 250, 252] },
+                    columnStyles: {
+                        0: { cellWidth: 54 },
+                        1: { cellWidth: 23 },
+                        2: { cellWidth: 25 },
+                        3: { cellWidth: 24 },
+                        4: { cellWidth: 21, halign: 'right' },
+                        5: { cellWidth: 25, halign: 'right' },
+                        6: { cellWidth: 23, halign: 'right' },
+                        7: { cellWidth: 24, halign: 'right' },
+                        8: { cellWidth: 26, halign: 'right' },
+                        9: { cellWidth: 24, halign: 'right' }
+                    },
+                    didDrawPage: () => drawStructuredPdfHeader(pdf, 'Detalle de inventario y rotación', 'Existencias • Valores en USD')
+                });
+
+                drawStructuredPdfFooter(pdf);
+                pdf.save(`informe_inventario_rotacion_${new Date().toISOString().slice(0, 10)}.pdf`);
+            } catch (error) {
+                console.error('Error al generar el informe de inventario:', error);
+                alert('No se pudo generar el informe PDF. Revisa la consola del navegador para más detalles.');
+            } finally {
+                button.disabled = false;
+                button.classList.remove('opacity-75', 'cursor-wait');
+                button.innerHTML = originalButtonContent;
+                lucide.createIcons();
+            }
+        }
+
+        function renderVentasTable(data) {
+            const headElem = document.getElementById('ventas-table-head');
+            const tbody = document.getElementById('table-body-ventas');
+
+            if (data.length === 0) {
+                headElem.innerHTML = `<th class="p-3">No hay datos para mostrar</th>`;
+                tbody.innerHTML = `<tr><td class="p-4 text-center text-gray-400">Carga el archivo de ventas para ver los datos.</td></tr>`;
+                return;
+            }
+
+            const columns = [
+                { key: 'cliente', label: 'Cliente' },
+                { key: 'factura', label: 'Factura S/I' },
+                { key: 'notaCred', label: 'Nota Cred' },
+                { key: 'menosImp', label: 'Menos Imp Ventas' },
+                { key: 'costoTotal', label: 'Costo Total' },
+                { key: 'equipos', label: 'Equipos' },
+                { key: 'manoObra', label: 'Mano Obra' },
+                { key: 'materiales', label: 'Materiales' },
+                { key: 'otros', label: 'Otros' },
+                { key: 'tecnico', label: 'Técnico' },
+                { key: 'tc', label: 'T/C' },
+                { key: 'margenDI', label: 'Margen D/I' },
+                { key: 'comision', label: 'Comisión' },
+                { key: 'comCierre', label: 'Com Cierre' },
+                { key: 'asesoria', label: 'Asesoría' },
+                { key: 'utilidadBruta', label: 'Utilidad Bruta' },
+                { key: 'cargaFinan', label: 'Carga Finan' },
+                { key: 'utilidadNeta', label: 'Utilidad Neta' },
+                { key: 'estado', label: 'Estado' }
+            ];
+
+            headElem.innerHTML = columns.map(col => `<th class="p-3 font-bold text-gray-700">${col.label}</th>`).join('');
+
+            tbody.innerHTML = data.map(row => `
+                <tr class="hover:bg-gray-50 transition">
+                    ${columns.map(col => {
+                        let val = row[col.key];
+                        if (typeof val === 'number') val = val.toFixed(2);
+                        return `<td class="p-3 text-gray-600">${val || ''}</td>`;
+                    }).join('')}
+                </tr>
+            `).join('');
+        }
+
+        function renderVentasCharts(data) {
+            // Gráfico 1: Ventas por Cliente
+            const clienteMap = {};
+            data.forEach(d => {
+                if (clienteMap[d.cliente]) {
+                    clienteMap[d.cliente] += d.factura;
+                } else {
+                    clienteMap[d.cliente] = d.factura;
+                }
+            });
+
+            const labels = Object.keys(clienteMap);
+            const values = Object.values(clienteMap);
+
+            if (chartVentasCliente) chartVentasCliente.destroy();
+            const ctx1 = document.getElementById('chartVentasCliente').getContext('2d');
+            chartVentasCliente = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Monto Facturado ($)',
+                        data: values,
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Gráfico 2: Composición de Costos
+            const costos = {
+                'Equipos': data.reduce((s, d) => s + d.equipos, 0),
+                'Mano Obra': data.reduce((s, d) => s + d.manoObra, 0),
+                'Materiales': data.reduce((s, d) => s + d.materiales, 0),
+                'Otros': data.reduce((s, d) => s + d.otros, 0),
+                'Técnico': data.reduce((s, d) => s + d.tecnico, 0)
+            };
+
+            if (chartVentasCostos) chartVentasCostos.destroy();
+            const ctx2 = document.getElementById('chartVentasCostos').getContext('2d');
+            chartVentasCostos = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(costos),
+                    datasets: [{
+                        data: Object.values(costos),
+                        backgroundColor: ['#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const total = Object.values(costos).reduce((a, b) => a + b, 0);
+                                    const pct = total > 0 ? ((ctx.raw / total) * 100).toFixed(1) : 0;
+                                    return `$${ctx.raw.toFixed(2)} (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // PROCESAMIENTO MÓDULO INVENTARIO (sin cambios)
+        // ==========================================
+        function processInventarioFile(rows) {
+            let headerIndex = -1;
+            for (let i = 0; i < Math.min(10, rows.length); i++) {
+                const rowStr = rows[i].join(' ').toLowerCase();
+                if (rowStr.includes('descripcion') || rowStr.includes('costo')) {
+                    headerIndex = i;
+                    break;
+                }
+            }
+            if (headerIndex === -1) headerIndex = 0;
+
+            const headers = rows[headerIndex].map(h => h.toString().trim());
+            const dataRows = rows.slice(headerIndex + 1);
+
+            rawInventarioData = dataRows.map(row => {
+                let item = {};
+                headers.forEach((h, idx) => { item[h] = row[idx]; });
+
+                const descripcion = item['Descripcion'] || item['DESCRIPCION'] || item['Descripción'] || 'Sin Descripción';
+                if (!descripcion || descripcion.toString().trim() === '') return null;
+
+                const marca = (item['Marca'] || item['MARCA'] || 'N/A').toString().trim();
+                const modelo = (item['Modelo'] || item['MODELO'] || 'N/A').toString().trim();
+                const estado = (item['Estado'] || item['ESTADO'] || 'GENERAL').toString().trim().toUpperCase();
+
+                const cantInicial = parseFloat(item['Cantidad'] || item['CANTIDAD'] || 0) || 0;
+                const ventasSalidas = parseFloat(item['VENTA'] || item['VENTAS'] || 0) || 0;
+                const stockActual = parseFloat(item['STOCK DESPUES DE VENTA'] || (cantInicial - ventasSalidas)) || 0;
+
+                const costoUnit = parseFloat(item['COSTO unitario'] || item['COSTO UNITARIO'] || 0) || 0;
+                const costoTotal = parseFloat(item['COSTO TOTAL'] || (cantInicial * costoUnit)) || 0;
+
+                const pctRotacion = cantInicial > 0 ? ((ventasSalidas / cantInicial) * 100) : 0;
+                const rotacionTag = ventasSalidas > 0 ? 'ALTA' : 'SIN';
+
+                return {
+                    descripcion, marca, modelo, estado,
+                    cantInicial, ventasSalidas, stockActual,
+                    costoUnit, costoTotal, pctRotacion, rotacionTag
+                };
+            }).filter(i => i !== null);
+
+            populateInventarioFilters();
+            applyInventarioFilters();
+        }
+
+        function populateInventarioFilters() {
+            const estados = ['TODOS', ...new Set(rawInventarioData.map(d => d.estado))];
+            const marcas = ['TODOS', ...new Set(rawInventarioData.map(d => d.marca))];
+
+            document.getElementById('filter-inv-estado').innerHTML = estados.map(e => `<option value="${e}">${e}</option>`).join('');
+            document.getElementById('filter-inv-marca').innerHTML = marcas.map(m => `<option value="${m}">${m}</option>`).join('');
+        }
+
+        function applyInventarioFilters() {
+            const rotacionFilter = document.getElementById('filter-inv-rotacion').value;
+            const estadoFilter = document.getElementById('filter-inv-estado').value;
+            const marcaFilter = document.getElementById('filter-inv-marca').value;
+            const searchFilter = document.getElementById('search-inv').value.toLowerCase();
+
+            const filtered = rawInventarioData.filter(item => {
+                const matchRot = rotacionFilter === 'TODOS' || item.rotacionTag === rotacionFilter;
+                const matchEst = estadoFilter === 'TODOS' || item.estado === estadoFilter;
+                const matchMarca = marcaFilter === 'TODOS' || item.marca === marcaFilter;
+                const matchSearch = item.descripcion.toLowerCase().includes(searchFilter) || 
+                                    item.marca.toLowerCase().includes(searchFilter) || 
+                                    item.modelo.toLowerCase().includes(searchFilter);
+                return matchRot && matchEst && matchMarca && matchSearch;
+            });
+
+            const totalItems = filtered.length;
+            const totalCantInicial = filtered.reduce((acc, c) => acc + c.cantInicial, 0);
+            const totalVendidas = filtered.reduce((acc, c) => acc + c.ventasSalidas, 0);
+            const totalStockActual = filtered.reduce((acc, c) => acc + c.stockActual, 0);
+            const totalCosto = filtered.reduce((acc, c) => acc + c.costoTotal, 0);
+
+            const pctRotacionGlobal = totalCantInicial > 0 ? ((totalVendidas / totalCantInicial) * 100) : 0;
+
+            document.getElementById('inv-kpi-total-items').textContent = totalItems;
+            document.getElementById('inv-kpi-unidades-total').textContent = `${totalCantInicial} unidades registradas`;
+            document.getElementById('inv-kpi-costo-total').textContent = `$${totalCosto.toFixed(2)}`;
+            document.getElementById('inv-kpi-vendidas').textContent = totalVendidas;
+            document.getElementById('inv-kpi-stock-actual').textContent = `${totalStockActual} unidades disponibles`;
+            document.getElementById('inv-kpi-rotacion-pct').textContent = `${pctRotacionGlobal.toFixed(1)}%`;
+
+            const tbody = document.getElementById('table-body-inventario');
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-gray-400">No se encontraron equipos con los filtros seleccionados.</td></tr>`;
+            } else {
+                tbody.innerHTML = filtered.map(item => `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-3 font-medium text-gray-800">${item.descripcion}</td>
+                        <td class="p-3 text-gray-600">${item.marca}</td>
+                        <td class="p-3 text-gray-600">${item.modelo}</td>
+                        <td class="p-3"><span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-semibold">${item.estado}</span></td>
+                        <td class="p-3 font-semibold">${item.cantInicial}</td>
+                        <td class="p-3 font-semibold text-indigo-600">${item.ventasSalidas}</td>
+                        <td class="p-3 font-semibold text-emerald-600">${item.stockActual}</td>
+                        <td class="p-3">$${item.costoUnit.toFixed(2)}</td>
+                        <td class="p-3 font-bold text-gray-800">$${item.costoTotal.toFixed(2)}</td>
+                        <td class="p-3">
+                            <span class="px-2 py-1 rounded text-xs font-bold ${item.ventasSalidas > 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
+                                ${item.ventasSalidas > 0 ? 'Con Rotación' : 'Sin Movimiento'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            renderInventarioCharts(filtered, totalCosto);
+        }
+
+        function renderInventarioCharts(data, totalCosto) {
+            const rotacionMap = {};
+            const valorMap = {};
+
+            data.forEach(d => {
+                rotacionMap[d.estado] = rotacionMap[d.estado] || { inicial: 0, vendida: 0 };
+                rotacionMap[d.estado].inicial += d.cantInicial;
+                rotacionMap[d.estado].vendida += d.ventasSalidas;
+
+                valorMap[d.estado] = (valorMap[d.estado] || 0) + d.costoTotal;
+            });
+
+            if (chartInvRotacion) chartInvRotacion.destroy();
+            if (chartInvValor) chartInvValor.destroy();
+
+            const ctx1 = document.getElementById('chartInvRotacion').getContext('2d');
+            chartInvRotacion = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(rotacionMap),
+                    datasets: [
+                        { label: 'Stock Inicial', data: Object.values(rotacionMap).map(v => v.inicial), backgroundColor: '#94a3b8' },
+                        { label: 'Unidades Vendidas/Salidas', data: Object.values(rotacionMap).map(v => v.vendida), backgroundColor: '#4f46e5' }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'top' } } }
+            });
+
+            const ctx2 = document.getElementById('chartInvValor').getContext('2d');
+            chartInvValor = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(valorMap),
+                    datasets: [{
+                        data: Object.values(valorMap),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const val = context.raw || 0;
+                                    const pct = totalCosto > 0 ? ((val / totalCosto) * 100).toFixed(1) : 0;
+                                    return `${context.label}: $${val.toFixed(2)} (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // PROCESAMIENTO FACTURAS DAS2
+        // ==========================================
+        function processDAS2(data) {
+            rawDas2Data = data.map(row => {
+                const monto = parseFloat(row['Monto'] || 0);
+                const saldo = parseFloat(row['Saldo'] || 0);
+                const pctSaldo = monto > 0 ? ((saldo / monto) * 100) : 0;
+
+                let mesVal = row['MES'];
+                let mesNombre = 'NO ESPECIFICADO';
+                if (mesVal) {
+                    let mesNum = parseInt(mesVal);
+                    if (!isNaN(mesNum) && mesesNombres[mesNum]) {
+                        mesNombre = mesesNombres[mesNum];
+                    } else {
+                        mesNombre = mesVal.toString().trim();
+                    }
+                }
+
+                return {
+                    factura: row['Número de Factura'] || row['Factura'] || 'S/N',
+                    mes: mesNombre,
+                    cliente: row['Cliente '] || row['Cliente'] || 'Consumidor Final',
+                    servicio: (row['TIPO DE SERVICIO'] || 'OTROS').toString().trim().toUpperCase(),
+                    pago: (row['forma de pago'] || row['Forma de Pago'] || 'NO ESPECIFICADO').toString().trim().toUpperCase(),
+                    monto: monto,
+                    saldo: saldo,
+                    pctSaldo: pctSaldo,
+                    estado: (row['ESTADO '] || row['ESTADO'] || 'PENDIENTE').toString().trim().toUpperCase()
+                };
+            });
+
+            populateSelectFilters();
+            applyDashboardFilters();
+        }
+
+        function populateSelectFilters() {
+            const meses = ['TODOS', ...new Set(rawDas2Data.map(d => d.mes))];
+            const servicios = ['TODOS', ...new Set(rawDas2Data.map(d => d.servicio))];
+            const pagos = ['TODOS', ...new Set(rawDas2Data.map(d => d.pago))];
+            const estados = ['TODOS', ...new Set(rawDas2Data.map(d => d.estado))];
+
+            document.getElementById('filter-mes').innerHTML = meses.map(m => `<option value="${m}">${m}</option>`).join('');
+            document.getElementById('filter-servicio').innerHTML = servicios.map(s => `<option value="${s}">${s}</option>`).join('');
+            document.getElementById('filter-pago').innerHTML = pagos.map(p => `<option value="${p}">${p}</option>`).join('');
+            document.getElementById('filter-estado').innerHTML = estados.map(e => `<option value="${e}">${e}</option>`).join('');
+        }
+
+        function applyDashboardFilters() {
+            const mesFilter = document.getElementById('filter-mes').value;
+            const servicioFilter = document.getElementById('filter-servicio').value;
+            const pagoFilter = document.getElementById('filter-pago').value;
+            const estadoFilter = document.getElementById('filter-estado').value;
+            const searchFilter = document.getElementById('search-das2').value.toLowerCase();
+
+            const filtered = rawDas2Data.filter(item => {
+                const matchMes = mesFilter === 'TODOS' || item.mes === mesFilter;
+                const matchServicio = servicioFilter === 'TODOS' || item.servicio === servicioFilter;
+                const matchPago = pagoFilter === 'TODOS' || item.pago === pagoFilter;
+                const matchEstado = estadoFilter === 'TODOS' || item.estado === estadoFilter;
+                const matchSearch = item.cliente.toLowerCase().includes(searchFilter) || item.factura.toLowerCase().includes(searchFilter);
+                return matchMes && matchServicio && matchPago && matchEstado && matchSearch;
+            });
+
+            const totalMonto = filtered.reduce((acc, curr) => acc + curr.monto, 0);
+            const totalSaldo = filtered.reduce((acc, curr) => acc + curr.saldo, 0);
+            const totalCobrado = totalMonto - totalSaldo;
+
+            const pctCobrado = totalMonto > 0 ? ((totalCobrado / totalMonto) * 100) : 0;
+            const pctSaldo = totalMonto > 0 ? ((totalSaldo / totalMonto) * 100) : 0;
+
+            document.getElementById('kpi-monto').textContent = `$${totalMonto.toFixed(2)}`;
+            document.getElementById('kpi-cobrado').textContent = `$${totalCobrado.toFixed(2)}`;
+            document.getElementById('kpi-cobrado-pct').textContent = `${pctCobrado.toFixed(1)}% recuperado`;
+            document.getElementById('kpi-saldo').textContent = `$${totalSaldo.toFixed(2)}`;
+            document.getElementById('kpi-saldo-pct').textContent = `${pctSaldo.toFixed(1)}% pendiente`;
+            document.getElementById('kpi-efectividad').textContent = `${pctCobrado.toFixed(1)}%`;
+            document.getElementById('kpi-facturas-count').textContent = `${filtered.length} facturas procesadas`;
+
+            const tbody = document.getElementById('table-body-das2');
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-gray-400">No se encontraron resultados.</td></tr>`;
+            } else {
+                tbody.innerHTML = filtered.map(item => `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-3 font-medium text-gray-800">${item.factura}</td>
+                        <td class="p-3"><span class="bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs font-semibold">${item.mes}</span></td>
+                        <td class="p-3 font-medium">${item.cliente}</td>
+                        <td class="p-3"><span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-semibold">${item.servicio}</span></td>
+                        <td class="p-3"><span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-medium">${item.pago}</span></td>
+                        <td class="p-3 font-semibold text-gray-800">$${item.monto.toFixed(2)}</td>
+                        <td class="p-3 text-red-600 font-semibold">$${item.saldo.toFixed(2)}</td>
+                        <td class="p-3 font-bold ${item.pctSaldo > 0 ? 'text-red-500' : 'text-green-600'}">${item.pctSaldo.toFixed(1)}%</td>
+                        <td class="p-3"><span class="px-2 py-1 rounded text-xs font-bold ${item.estado === 'PAGADO' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.estado}</span></td>
+                    </tr>
+                `).join('');
+            }
+
+            renderDashboardCharts(filtered, totalMonto);
+        }
+
+        function renderDashboardCharts(data, totalMonto) {
+            const serviciosMap = {};
+            const pagosMap = {};
+            const estadosMap = {};
+
+            data.forEach(d => {
+                serviciosMap[d.servicio] = (serviciosMap[d.servicio] || 0) + d.monto;
+                pagosMap[d.pago] = (pagosMap[d.pago] || 0) + d.monto;
+                estadosMap[d.estado] = (estadosMap[d.estado] || 0) + 1;
+            });
+
+            if (chartServicios) chartServicios.destroy();
+            if (chartPagos) chartPagos.destroy();
+            if (chartEstados) chartEstados.destroy();
+
+            const tooltipPercentOption = {
+                callbacks: {
+                    label: function(context) {
+                        const value = context.raw || 0;
+                        const percentage = totalMonto > 0 ? ((value / totalMonto) * 100).toFixed(1) : 0;
+                        return `${context.label}: $${value.toFixed(2)} (${percentage}%)`;
+                    }
+                }
+            };
+
+            const ctx1 = document.getElementById('chartServicios').getContext('2d');
+            chartServicios = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(serviciosMap),
+                    datasets: [{ label: 'Monto ($)', data: Object.values(serviciosMap), backgroundColor: '#3b82f6' }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false }, tooltip: tooltipPercentOption } }
+            });
+
+            const ctx2 = document.getElementById('chartPagos').getContext('2d');
+            chartPagos = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(pagosMap),
+                    datasets: [{ label: 'Monto ($)', data: Object.values(pagosMap), backgroundColor: '#10b981' }]
+                },
+                options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false }, tooltip: tooltipPercentOption } }
+            });
+
+            const totalItems = data.length;
+            const ctx3 = document.getElementById('chartEstados').getContext('2d');
+            chartEstados = new Chart(ctx3, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(estadosMap),
+                    datasets: [{ data: Object.values(estadosMap), backgroundColor: ['#10b981', '#ef4444', '#f59e0b'] }]
+                },
+                options: { 
+                    responsive: true,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw || 0;
+                                    const percentage = totalItems > 0 ? ((value / totalItems) * 100).toFixed(1) : 0;
+                                    return `${context.label}: ${value} facturas (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // TABLA GENÉRICA (fallback)
+        // ==========================================
+        function processGenericTable(data, bodyId, headId) {
+            if (!data.length) return;
+            const headers = Object.keys(data[0]);
+
+            const headElem = document.getElementById(headId);
+            headElem.innerHTML = headers.map(h => `<th class="p-3 font-bold text-gray-700">${h}</th>`).join('');
+
+            const bodyElem = document.getElementById(bodyId);
+            bodyElem.innerHTML = data.map(row => `
+                <tr class="hover:bg-gray-50">
+                    ${headers.map(h => `<td class="p-3 text-gray-600">${row[h] !== undefined ? row[h] : ''}</td>`).join('')}
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
