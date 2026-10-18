@@ -153,6 +153,42 @@
                 </div>
             </div>
 
+            <!-- EVOLUCIÓN DE VENTAS (nuevo, USD) -->
+            <div class="p-5 sm:p-6 rounded-xl shadow-sm border border-gray-200" style="background:#FFFFFF">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-5">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800">Evolución de ventas</h2>
+                        <p class="text-xs mt-0.5" style="color:#9CA3AF">Ingresos por día</p>
+                    </div>
+                    <div id="evo-botones" class="inline-flex self-start p-1 rounded-xl gap-1" style="background:#F1F3F5">
+                        <button type="button" data-dias="7" class="evo-btn px-4 py-1.5 rounded-lg text-sm font-medium transition">7 días</button>
+                        <button type="button" data-dias="30" class="evo-btn px-4 py-1.5 rounded-lg text-sm font-medium transition">30 días</button>
+                        <button type="button" data-dias="90" class="evo-btn px-4 py-1.5 rounded-lg text-sm font-medium transition">90 días</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 mb-5">
+                    <div class="px-2 lg:pr-5 py-2">
+                        <p class="text-xs" style="color:#6B7280">Total del periodo</p>
+                        <p class="text-xl sm:text-2xl font-bold text-gray-800 mt-1 break-words" id="evo-total">$ 0.00</p>
+                    </div>
+                    <div class="px-2 lg:px-5 py-2 border-l" style="border-color:#E5E7EB">
+                        <p class="text-xs" style="color:#6B7280">Promedio diario</p>
+                        <p class="text-xl sm:text-2xl font-bold text-gray-800 mt-1 break-words" id="evo-promedio">$ 0.00</p>
+                    </div>
+                    <div class="px-2 lg:px-5 py-2 lg:border-l" style="border-color:#E5E7EB">
+                        <p class="text-xs" style="color:#6B7280">Tickets</p>
+                        <p class="text-xl sm:text-2xl font-bold text-gray-800 mt-1" id="evo-tickets">0</p>
+                    </div>
+                    <div class="px-2 lg:pl-5 py-2 border-l" style="border-color:#E5E7EB">
+                        <p class="text-xs" style="color:#6B7280">Ticket promedio</p>
+                        <p class="text-xl sm:text-2xl font-bold text-gray-800 mt-1 break-words" id="evo-ticket">$ 0.00</p>
+                    </div>
+                </div>
+
+                <div class="relative w-full h-64 sm:h-80 rounded-lg p-2" style="background:#F8F9FA"><canvas id="chartEvolucionVentas"></canvas></div>
+            </div>
+
             <!-- TABLA DAS2 -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-between sm:items-center bg-gray-50">
@@ -1822,6 +1858,156 @@
                     .forEach(c => { if (c) c.resize(); });
             }, 150);
         });
+    </script>
+
+    <!-- Evolución de ventas (módulo añadido; no modifica el código existente) -->
+    <script>
+        (function () {
+            const COLOR = '#D34A68';
+            const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+            let diasSel = 30;
+            let chartEvo = null;
+            let fechas = []; // fecha ISO (yyyy-mm-dd) por fila, en el mismo orden que rawDas2Data
+
+            const money = n => '$ ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const iso = d => d.toISOString().slice(0, 10);
+
+            function parseFecha(v) {
+                if (v === null || v === undefined || v === '') return null;
+                if (typeof v === 'number') {               // serial de Excel
+                    const d = new Date(Math.round((v - 25569) * 86400000));
+                    return isNaN(d) ? null : iso(d);
+                }
+                if (v instanceof Date) return isNaN(v) ? null : iso(v);
+                const t = String(v).trim();
+                let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+                if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+                m = t.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+                if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+                return null;
+            }
+
+            function setBotones() {
+                document.querySelectorAll('#evo-botones .evo-btn').forEach(b => {
+                    const on = Number(b.dataset.dias) === diasSel;
+                    b.style.background = on ? '#FFFFFF' : 'transparent';
+                    b.style.color = on ? COLOR : '#6B7280';
+                    b.style.fontWeight = on ? '700' : '500';
+                    b.style.boxShadow = on ? '0 1px 2px rgba(0,0,0,0.12)' : 'none';
+                });
+            }
+
+            function render() {
+                const canvas = document.getElementById('chartEvolucionVentas');
+                if (!canvas || typeof rawDas2Data === 'undefined') return;
+
+                const val = id => document.getElementById(id).value;
+                const servicio = val('filter-servicio'), pago = val('filter-pago'), estado = val('filter-estado');
+                const q = val('search-das2').toLowerCase();
+
+                const filas = [];
+                rawDas2Data.forEach((d, i) => {
+                    const f = fechas[i];
+                    if (!f) return;
+                    if ((servicio === 'TODOS' || d.servicio === servicio) &&
+                        (pago === 'TODOS' || d.pago === pago) &&
+                        (estado === 'TODOS' || d.estado === estado) &&
+                        (String(d.cliente).toLowerCase().includes(q) || String(d.factura).toLowerCase().includes(q))) {
+                        filas.push({ f, monto: d.monto });
+                    }
+                });
+
+                // Fecha fin = última fecha del archivo; el periodo son los N días que terminan ahí
+                const validas = fechas.filter(Boolean).sort();
+                const fin = validas.length ? new Date(validas[validas.length - 1] + 'T00:00:00Z') : new Date();
+                const dias = [];
+                for (let k = diasSel - 1; k >= 0; k--) dias.push(iso(new Date(fin.getTime() - k * 86400000)));
+                const porDia = {}; dias.forEach(d => porDia[d] = 0);
+                let total = 0, tickets = 0;
+                filas.forEach(r => {
+                    if (r.f in porDia) { porDia[r.f] += r.monto; total += r.monto; tickets++; }
+                });
+
+                document.getElementById('evo-total').textContent = money(total);
+                document.getElementById('evo-promedio').textContent = money(total / diasSel);
+                document.getElementById('evo-tickets').textContent = tickets.toLocaleString('en-US');
+                document.getElementById('evo-ticket').textContent = money(tickets ? total / tickets : 0);
+
+                const labels = dias.map(d => `${parseInt(d.slice(8, 10), 10)} ${MESES[parseInt(d.slice(5, 7), 10) - 1]}`);
+                const valores = dias.map(d => porDia[d]);
+
+                if (chartEvo) chartEvo.destroy();
+                chartEvo = new Chart(canvas.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Ingresos ($)',
+                            data: valores,
+                            borderColor: COLOR,
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                            backgroundColor: (ctx) => {
+                                const a = ctx.chart.chartArea;
+                                if (!a) return 'rgba(211,74,104,0.2)';
+                                const g = ctx.chart.ctx.createLinearGradient(0, a.top, 0, a.bottom);
+                                g.addColorStop(0, 'rgba(211,74,104,0.35)');
+                                g.addColorStop(1, 'rgba(211,74,104,0)');
+                                return g;
+                            },
+                            pointRadius: diasSel === 90 ? 2 : 3.5,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#FFFFFF',
+                            pointBorderColor: COLOR,
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { callbacks: { label: c => money(c.raw) } }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#ECECEC', drawBorder: false },
+                                border: { display: false },
+                                ticks: { color: '#9CA3AF', callback: v => '$ ' + v.toLocaleString('en-US') }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#9CA3AF', maxRotation: 0, autoSkip: true, maxTicksLimit: diasSel === 7 ? 7 : 8 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Botones 7 / 30 / 90 días (filtro único)
+            document.querySelectorAll('#evo-botones .evo-btn').forEach(b => {
+                b.addEventListener('click', () => { diasSel = Number(b.dataset.dias); setBotones(); render(); });
+            });
+            setBotones();
+
+            // Enganches sin modificar las funciones originales
+            const origProcess = window.processDAS2;
+            window.processDAS2 = function (data) {
+                fechas = (data || []).map(r => parseFecha(r['Fecha'] !== undefined ? r['Fecha'] : r['FECHA']));
+                const r = origProcess.apply(this, arguments);
+                try { render(); } catch (e) { console.error('Evolución de ventas:', e); }
+                return r;
+            };
+            const origApply = window.applyDashboardFilters;
+            window.applyDashboardFilters = function () {
+                const r = origApply.apply(this, arguments);
+                try { render(); } catch (e) { console.error('Evolución de ventas:', e); }
+                return r;
+            };
+        })();
     </script>
 </body>
 </html>
