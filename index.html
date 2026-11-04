@@ -28,10 +28,10 @@
 <body class="bg-slate-50 font-sans antialiased flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden">
 
     <!-- MÓDULO LATERAL (SIDEBAR) -->
-    <aside class="w-full lg:w-64 bg-slate-900 text-white flex flex-col justify-between p-3 lg:p-4 shadow-lg shrink-0 lg:overflow-y-auto">
+    <aside class="w-full lg:w-64 bg-[#0B192C] text-white flex flex-col justify-between p-3 lg:p-4 shadow-lg shrink-0 lg:overflow-y-auto">
         <div>
             <div class="flex items-center space-x-3 mb-3 lg:mb-8 px-2">
-                <div class="bg-sky-500 p-2 rounded-xl shadow-lg shadow-sky-500/30"><i data-lucide="shield-check" class="w-6 h-6 text-white"></i></div>
+                <div class="bg-[#1E88E5] p-2 rounded-xl shadow-lg shadow-sky-500/30"><i data-lucide="shield-check" class="w-6 h-6 text-white"></i></div>
                 <span class="text-xl font-bold tracking-wide">Sistema Loja</span>
             </div>
             
@@ -57,7 +57,7 @@
 
         <div class="hidden lg:block border-t border-slate-800 pt-4 px-2 text-sm text-gray-400">
             <p class="font-medium text-gray-300">Carga de Datos</p>
-            <p class="text-xs text-gray-500">Soporta: .xlsx, .xls</p>
+            <p class="text-xs text-slate-500">Soporta: .xlsx, .xls</p>
         </div>
     </aside>
 
@@ -69,8 +69,8 @@
             <div class="flex items-center space-x-3">
                 <i data-lucide="file-up" class="w-6 h-6 text-blue-600"></i>
                 <div>
-                    <h3 class="font-bold text-gray-800">Cargar Archivo Excel</h3>
-                    <p class="text-xs text-gray-500">Sube tus archivos DAS2, Inventario o Ventas para actualizar métricas e indicadores de porcentaje.</p>
+                    <h3 class="font-bold text-slate-800">Cargar Archivo Excel</h3>
+                    <p class="text-xs text-slate-500">Sube tus archivos DAS2, Inventario o Ventas para actualizar métricas e indicadores de porcentaje.</p>
                 </div>
             </div>
             <label class="cursor-pointer bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
@@ -87,32 +87,32 @@
                 
                 <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Mes:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Mes:</label>
                         <select id="filter-mes" onchange="applyDashboardFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Tipo de Servicio:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Tipo de Servicio:</label>
                         <select id="filter-servicio" onchange="applyDashboardFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Tipo de Pago:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Tipo de Pago:</label>
                         <select id="filter-pago" onchange="applyDashboardFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Estado:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Estado:</label>
                         <select id="filter-estado" onchange="applyDashboardFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
-                    <button type="button" id="btn-exportar-dashboard-pdf" onclick="exportDashboardPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                    <button type="button" id="btn-exportar-dashboard-pdf" onclick="exportDashboardPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition shadow-sm">
                         <i data-lucide="file-down" class="w-4 h-4"></i>
-                        <span>Generar PDF</span>
+                        <span>Reporte Ejecutivo</span>
                     </button>
                 </div>
             </div>
@@ -120,40 +120,40 @@
             <!-- TARJETAS KPI DAS2 -->
             <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Monto Total Facturado</p>
-                    <h3 class="text-xl sm:text-2xl font-bold break-words text-gray-800 mt-1" id="kpi-monto">$0.00</h3>
+                    <p class="text-sm text-slate-500 font-medium">Monto Total Facturado</p>
+                    <h3 class="text-2xl sm:text-3xl font-extrabold break-words text-blue-600 mt-1" id="kpi-monto">$0.00</h3>
                     <span class="text-xs text-blue-600 font-semibold">100% del total filtrado</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Cobrado / Recuperado</p>
+                    <p class="text-sm text-slate-500 font-medium">Cobrado / Recuperado</p>
                     <h3 class="text-xl sm:text-2xl font-bold break-words text-emerald-600 mt-1" id="kpi-cobrado">$0.00</h3>
                     <span class="text-xs text-emerald-600 font-bold" id="kpi-cobrado-pct">0.00% recuperado</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Saldo Pendiente</p>
+                    <p class="text-sm text-slate-500 font-medium">Saldo Pendiente</p>
                     <h3 class="text-xl sm:text-2xl font-bold break-words text-red-600 mt-1" id="kpi-saldo">$0.00</h3>
                     <span class="text-xs text-red-600 font-bold" id="kpi-saldo-pct">0.00% pendiente</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Efectividad de Cobro</p>
+                    <p class="text-sm text-slate-500 font-medium">Efectividad de Cobro</p>
                     <h3 class="text-xl sm:text-2xl font-bold break-words text-blue-600 mt-1" id="kpi-efectividad">0.0%</h3>
-                    <span class="text-xs text-gray-500" id="kpi-facturas-count">0 facturas procesadas</span>
+                    <span class="text-xs text-slate-500" id="kpi-facturas-count">0 facturas procesadas</span>
                 </div>
             </div>
 
             <!-- GRÁFICOS DAS2 -->
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-gray-800 mb-4">% Participación por Servicio</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartServicios"></canvas></div>
+                    <h2 class="text-base font-bold text-slate-800 mb-4">% Participación por Servicio</h2>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartServicios"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartServicios"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-gray-800 mb-4">% Monto por Tipo de Pago</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartPagos"></canvas></div>
+                    <h2 class="text-base font-bold text-slate-800 mb-4">% Monto por Tipo de Pago</h2>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartPagos"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartPagos"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-gray-800 mb-4">% Distribución Pagados vs Pendientes</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartEstados"></canvas></div>
+                    <h2 class="text-base font-bold text-slate-800 mb-4">% Distribución Pagados vs Pendientes</h2>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartEstados"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartEstados"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
                 </div>
             </div>
 
@@ -161,7 +161,7 @@
             <div class="p-5 sm:p-6 rounded-xl shadow-sm border border-gray-200" style="background:#FFFFFF">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-5">
                     <div>
-                        <h2 class="text-lg font-bold text-gray-800">Evolución de ventas</h2>
+                        <h2 class="text-lg font-bold text-slate-800">Evolución de ventas</h2>
                         <p class="text-xs mt-0.5" style="color:#9CA3AF">Ingresos por día</p>
                     </div>
                     <div id="evo-botones" class="inline-flex self-start p-1 rounded-xl gap-1" style="background:#F1F3F5">
@@ -174,29 +174,29 @@
                 <div class="grid grid-cols-2 lg:grid-cols-4 mb-5">
                     <div class="px-2 lg:pr-5 py-2">
                         <p class="text-xs" style="color:#6B7280">Total del periodo</p>
-                        <p class="text-xl sm:text-2xl font-bold text-gray-800 mt-1 break-words" id="evo-total">$ 0.00</p>
+                        <p class="text-xl sm:text-2xl font-bold text-slate-800 mt-1 break-words" id="evo-total">$ 0.00</p>
                     </div>
                     <div class="px-2 lg:px-5 py-2 border-l" style="border-color:#E5E7EB">
                         <p class="text-xs" style="color:#6B7280">Promedio diario</p>
-                        <p class="text-xl sm:text-2xl font-bold text-gray-800 mt-1 break-words" id="evo-promedio">$ 0.00</p>
+                        <p class="text-xl sm:text-2xl font-bold text-slate-800 mt-1 break-words" id="evo-promedio">$ 0.00</p>
                     </div>
                     <div class="px-2 lg:px-5 py-2 lg:border-l" style="border-color:#E5E7EB">
                         <p class="text-xs" style="color:#6B7280">Tickets</p>
-                        <p class="text-xl sm:text-2xl font-bold text-gray-800 mt-1" id="evo-tickets">0</p>
+                        <p class="text-xl sm:text-2xl font-bold text-slate-800 mt-1" id="evo-tickets">0</p>
                     </div>
                     <div class="px-2 lg:pl-5 py-2 border-l" style="border-color:#E5E7EB">
                         <p class="text-xs" style="color:#6B7280">Ticket promedio</p>
-                        <p class="text-xl sm:text-2xl font-bold text-gray-800 mt-1 break-words" id="evo-ticket">$ 0.00</p>
+                        <p class="text-xl sm:text-2xl font-bold text-slate-800 mt-1 break-words" id="evo-ticket">$ 0.00</p>
                     </div>
                 </div>
 
-                <div class="relative w-full h-64 sm:h-80 rounded-lg p-2" style="background:#F8F9FA"><canvas id="chartEvolucionVentas"></canvas></div>
+                <div class="relative w-full h-64 sm:h-80 rounded-lg p-2" style="background:#F8F9FA"><canvas id="chartEvolucionVentas"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartEvolucionVentas"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
             </div>
 
             <!-- TABLA DAS2 -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-between sm:items-center bg-gray-50">
-                    <h3 class="font-bold text-gray-800">Detalle Dinámico con Porcentajes</h3>
+                    <h3 class="font-bold text-slate-800">Detalle Dinámico con Porcentajes</h3>
                     <input type="text" id="search-das2" onkeyup="applyDashboardFilters()" placeholder="Buscar cliente o factura..." class="text-sm p-2 border border-gray-300 rounded-lg w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="overflow-x-auto max-h-96">
@@ -230,7 +230,7 @@
                 <!-- FILTROS DE INVENTARIO -->
                 <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Nivel de Rotación:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Nivel de Rotación:</label>
                         <select id="filter-inv-rotacion" onchange="applyInventarioFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                             <option value="ALTA">Alta Rotación (Con Salidas)</option>
@@ -238,20 +238,20 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Estado / Condición:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Estado / Condición:</label>
                         <select id="filter-inv-estado" onchange="applyInventarioFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Marca:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Marca:</label>
                         <select id="filter-inv-marca" onchange="applyInventarioFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todas</option>
                         </select>
                     </div>
-                    <button type="button" id="btn-exportar-inventario-pdf" onclick="exportInventarioPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                    <button type="button" id="btn-exportar-inventario-pdf" onclick="exportInventarioPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition shadow-sm">
                         <i data-lucide="file-down" class="w-4 h-4"></i>
-                        <span>Generar PDF</span>
+                        <span>Reporte Ejecutivo</span>
                     </button>
                 </div>
             </div>
@@ -259,43 +259,43 @@
             <!-- TARJETAS KPI DE INVENTARIO -->
             <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Variedad de Equipos / Ítems</p>
-                    <h3 class="text-xl sm:text-2xl font-bold break-words text-gray-800 mt-1" id="inv-kpi-total-items">0</h3>
+                    <p class="text-sm text-slate-500 font-medium">Variedad de Equipos / Ítems</p>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-slate-800 mt-1" id="inv-kpi-total-items">0</h3>
                     <span class="text-xs text-blue-600 font-semibold" id="inv-kpi-unidades-total">0 unidades en stock inicial</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Valor Total Invertido</p>
-                    <h3 class="text-xl sm:text-2xl font-bold break-words text-emerald-600 mt-1" id="inv-kpi-costo-total">$0.00</h3>
+                    <p class="text-sm text-slate-500 font-medium">Valor Total Invertido</p>
+                    <h3 class="text-2xl sm:text-3xl font-extrabold break-words text-blue-600 mt-1" id="inv-kpi-costo-total">$0.00</h3>
                     <span class="text-xs text-emerald-600 font-bold">Costo total acumulado</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Unidades Vendidas / Salidas</p>
+                    <p class="text-sm text-slate-500 font-medium">Unidades Vendidas / Salidas</p>
                     <h3 class="text-xl sm:text-2xl font-bold break-words text-indigo-600 mt-1" id="inv-kpi-vendidas">0</h3>
                     <span class="text-xs text-indigo-600 font-bold" id="inv-kpi-stock-actual">0 unidades en stock actual</span>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Tasa de Rotación Global</p>
+                    <p class="text-sm text-slate-500 font-medium">Tasa de Rotación Global</p>
                     <h3 class="text-xl sm:text-2xl font-bold break-words text-amber-600 mt-1" id="inv-kpi-rotacion-pct">0.0%</h3>
-                    <span class="text-xs text-gray-500">% de stock total despachado</span>
+                    <span class="text-xs text-slate-500">% de stock total despachado</span>
                 </div>
             </div>
 
             <!-- GRÁFICOS DE INVENTARIO -->
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-gray-800 mb-4">Stock Inic vs Unidades Vendidas por Estado</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartInvRotacion"></canvas></div>
+                    <h2 class="text-base font-bold text-slate-800 mb-4">Stock Inic vs Unidades Vendidas por Estado</h2>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartInvRotacion"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartInvRotacion"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-gray-800 mb-4">% Valor Invertido por Estado/Condición</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartInvValor"></canvas></div>
+                    <h2 class="text-base font-bold text-slate-800 mb-4">% Valor Invertido por Estado/Condición</h2>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartInvValor"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartInvValor"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
                 </div>
             </div>
 
             <!-- TABLA DINÁMICA DE INVENTARIO CON ROTACIÓN -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-between sm:items-center bg-gray-50">
-                    <h3 class="font-bold text-gray-800">Tabla Dinámica de Equipos con Indicadores de Rotación</h3>
+                    <h3 class="font-bold text-slate-800">Tabla Dinámica de Equipos con Indicadores de Rotación</h3>
                     <input type="text" id="search-inv" onkeyup="applyInventarioFilters()" placeholder="Buscar equipo, marca o modelo..." class="text-sm p-2 border border-gray-300 rounded-lg w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="overflow-x-auto max-h-96">
@@ -328,14 +328,14 @@
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Módulo de Ventas Agosto</h1>
                 <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Filtrar por Estado:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Filtrar por Estado:</label>
                         <select id="filter-ventas-estado" onchange="applyVentasFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
-                    <button type="button" id="btn-exportar-ventas-pdf" onclick="exportVentasDashboardPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                    <button type="button" id="btn-exportar-ventas-pdf" onclick="exportVentasDashboardPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition shadow-sm">
                         <i data-lucide="file-down" class="w-4 h-4"></i>
-                        <span>Generar PDF</span>
+                        <span>Reporte Ejecutivo</span>
                     </button>
                 </div>
             </div>
@@ -343,19 +343,19 @@
             <!-- TARJETAS KPI VENTAS -->
             <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-blue-500">
-                    <p class="text-sm text-gray-500 font-medium">Total Ventas (Facturado)</p>
-                    <h3 class="text-3xl font-bold break-words text-gray-800 mt-1" id="kpi-ventas-total">$0.00</h3>
+                    <p class="text-sm text-slate-500 font-medium">Total Ventas (Facturado)</p>
+                    <h3 class="text-2xl sm:text-3xl font-extrabold break-words text-blue-600 mt-1" id="kpi-ventas-total">$0.00</h3>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Costo Total</p>
+                    <p class="text-sm text-slate-500 font-medium">Costo Total</p>
                     <h3 class="text-xl sm:text-2xl font-bold break-words text-red-600 mt-1" id="kpi-ventas-costo">$0.00</h3>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Utilidad Bruta</p>
+                    <p class="text-sm text-slate-500 font-medium">Utilidad Bruta</p>
                     <h3 class="text-xl sm:text-2xl font-bold break-words text-emerald-600 mt-1" id="kpi-ventas-utilidad-bruta">$0.00</h3>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <p class="text-sm text-gray-500 font-medium">Utilidad Neta</p>
+                    <p class="text-sm text-slate-500 font-medium">Utilidad Neta</p>
                     <h3 class="text-xl sm:text-2xl font-bold break-words text-indigo-600 mt-1" id="kpi-ventas-utilidad-neta">$0.00</h3>
                 </div>
             </div>
@@ -368,14 +368,14 @@
             <!-- GRÁFICOS VENTAS -->
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-gray-800 mb-4">Ventas por Cliente</h2>
+                    <h2 class="text-base font-bold text-slate-800 mb-4">Ventas por Cliente</h2>
                     <div class="relative w-full h-64 sm:h-72 flex items-center justify-center">
                         <div id="empty-ventas-cliente" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none"><i data-lucide="bar-chart-2" class="w-10 h-10 mb-2"></i><span class="text-sm">Carga un archivo para ver los datos</span></div>
                         <canvas id="chartVentasCliente"></canvas>
                     </div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-gray-800 mb-4">Composición de Costos</h2>
+                    <h2 class="text-base font-bold text-slate-800 mb-4">Composición de Costos</h2>
                     <div class="relative w-full h-64 sm:h-72 flex items-center justify-center">
                         <div id="empty-ventas-costos" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none"><i data-lucide="bar-chart-2" class="w-10 h-10 mb-2"></i><span class="text-sm">Carga un archivo para ver los datos</span></div>
                         <canvas id="chartVentasCostos"></canvas>
@@ -386,7 +386,7 @@
             <!-- TABLA DE VENTAS -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-between sm:items-center bg-gray-50">
-                    <h3 class="font-bold text-gray-800">Detalle de Ventas Agosto</h3>
+                    <h3 class="font-bold text-slate-800">Detalle de Ventas Agosto</h3>
                     <input type="text" id="search-ventas" onkeyup="applyVentasFilters()" placeholder="Buscar cliente o factura..." class="text-sm p-2 border border-gray-300 rounded-lg w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div class="overflow-x-auto max-h-96">
@@ -411,30 +411,26 @@
                 
                 <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Mes:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Mes:</label>
                         <select id="filter-top-mes" onchange="applyTopProductosFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todos</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Categoría:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Categoría:</label>
                         <select id="filter-top-cat" onchange="applyTopProductosFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todas</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-semibold text-gray-500 block">Marca:</label>
+                        <label class="text-xs font-semibold text-slate-500 block">Marca:</label>
                         <select id="filter-top-marca" onchange="applyTopProductosFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="TODOS">Todas</option>
                         </select>
                     </div>
-                    <button type="button" id="btn-exportar-top-pdf" onclick="exportTopProductosPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                    <button type="button" id="btn-exportar-top-pdf" onclick="exportTopProductosPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition shadow-sm">
                         <i data-lucide="file-down" class="w-4 h-4"></i>
                         <span>Reporte Ejecutivo</span>
-                    </button>
-                    <button type="button" onclick="exportTopProductosPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
-                        <i data-lucide="download" class="w-4 h-4"></i>
-                        <span>Descargar PDF</span>
                     </button>
                 </div>
             </div>
@@ -444,14 +440,14 @@
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center">
                     <div>
                         <p class="text-sm text-red-600 font-bold uppercase tracking-wider">Ventas Totales</p>
-                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="top-kpi-ventas">$0.00</h3>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold text-blue-600 mt-1" id="top-kpi-ventas">$0.00</h3>
                     </div>
                     <div class="text-gray-400"><i data-lucide="shopping-cart" class="w-8 h-8"></i></div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center">
                     <div>
                         <p class="text-sm text-red-600 font-bold uppercase tracking-wider">Margen $</p>
-                        <h3 class="text-2xl font-bold text-gray-800 mt-1" id="top-kpi-margen">$0.00</h3>
+                        <h3 class="text-2xl sm:text-3xl font-extrabold text-emerald-600 mt-1" id="top-kpi-margen">$0.00</h3>
                     </div>
                     <div class="text-gray-400"><i data-lucide="wallet" class="w-8 h-8"></i></div>
                 </div>
@@ -460,18 +456,18 @@
             <!-- Gráficos -->
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-gray-800 mb-4">Ventas Mensuales</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartTopMeses"></canvas></div>
+                    <h2 class="text-base font-bold text-slate-800 mb-4">Ventas Mensuales</h2>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartTopMeses"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartTopMeses"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-gray-800 mb-4">Ventas por producto (Top 7)</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartTopProductos"></canvas></div>
+                    <h2 class="text-base font-bold text-slate-800 mb-4">Ventas por producto (Top 7)</h2>
+                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartTopProductos"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartTopProductos"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
                 </div>
             </div>
 
             <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-base font-bold text-gray-800 mb-4">Ventas diarias (Mes seleccionado)</h2>
-                <div class="relative w-full h-64 sm:h-80"><canvas id="chartTopDiario"></canvas></div>
+                <h2 class="text-base font-bold text-slate-800 mb-4">Ventas diarias (Mes seleccionado)</h2>
+                <div class="relative w-full h-64 sm:h-80"><canvas id="chartTopDiario"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartTopDiario"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
             </div>
         </section>
 
@@ -526,13 +522,13 @@
         function switchTab(tabId) {
             ['dashboard', 'inventario', 'ventas', 'top-productos'].forEach(id => {
                 document.getElementById(`tab-${id}`).classList.add('hidden');
-                document.getElementById(`nav-${id}`).classList.remove('bg-sky-500', 'text-white');
+                document.getElementById(`nav-${id}`).classList.remove('bg-[#1E88E5]', 'text-white');
                 document.getElementById(`nav-${id}`).classList.add('text-slate-300');
             });
 
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             const activeNav = document.getElementById(`nav-${tabId}`);
-            activeNav.classList.add('bg-sky-500', 'text-white');
+            activeNav.classList.add('bg-[#1E88E5]', 'text-white');
             activeNav.classList.remove('text-slate-300');
         }
 
@@ -1669,7 +1665,7 @@
             } else {
                 tbody.innerHTML = filtered.map(item => `
                     <tr class="hover:bg-gray-50 transition">
-                        <td class="p-3 font-medium text-gray-800">${item.descripcion}</td>
+                        <td class="p-3 font-medium text-slate-800">${item.descripcion}</td>
                         <td class="p-3 text-gray-600">${item.marca}</td>
                         <td class="p-3 text-gray-600">${item.modelo}</td>
                         <td class="p-3"><span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-semibold">${item.estado}</span></td>
@@ -1677,7 +1673,7 @@
                         <td class="p-3 font-semibold text-indigo-600">${item.ventasSalidas}</td>
                         <td class="p-3 font-semibold text-emerald-600">${item.stockActual}</td>
                         <td class="p-3">$${item.costoUnit.toFixed(2)}</td>
-                        <td class="p-3 font-bold text-gray-800">$${item.costoTotal.toFixed(2)}</td>
+                        <td class="p-3 font-bold text-slate-800">$${item.costoTotal.toFixed(2)}</td>
                         <td class="p-3">
                             <span class="px-2 py-1 rounded text-xs font-bold ${item.ventasSalidas > 0 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
                                 ${item.ventasSalidas > 0 ? 'Con Rotación' : 'Sin Movimiento'}
@@ -1831,12 +1827,12 @@
             } else {
                 tbody.innerHTML = filtered.map(item => `
                     <tr class="hover:bg-gray-50 transition">
-                        <td class="p-3 font-medium text-gray-800">${item.factura}</td>
+                        <td class="p-3 font-medium text-slate-800">${item.factura}</td>
                         <td class="p-3"><span class="bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs font-semibold">${item.mes}</span></td>
                         <td class="p-3 font-medium">${item.cliente}</td>
                         <td class="p-3"><span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-semibold">${item.servicio}</span></td>
-                        <td class="p-3"><span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-medium">${item.pago}</span></td>
-                        <td class="p-3 font-semibold text-gray-800">$${item.monto.toFixed(2)}</td>
+                        <td class="p-3"><span class="bg-gray-100 text-slate-800 px-2 py-1 rounded text-xs font-medium">${item.pago}</span></td>
+                        <td class="p-3 font-semibold text-slate-800">$${item.monto.toFixed(2)}</td>
                         <td class="p-3 text-red-600 font-semibold">$${item.saldo.toFixed(2)}</td>
                         <td class="p-3 font-bold ${item.pctSaldo > 0 ? 'text-red-500' : 'text-green-600'}">${item.pctSaldo.toFixed(1)}%</td>
                         <td class="p-3"><span class="px-2 py-1 rounded text-xs font-bold ${item.estado === 'PAGADO' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.estado}</span></td>
@@ -2352,6 +2348,29 @@
         } catch (e) { console.error('Resumen ejecutivo:', e); }
         return r;
     };
+    lucide.createIcons();
+})();
+</script>
+
+<script>
+(function() {
+    // Oculta/muestra el mensaje "Sin datos" según el gráfico tenga datos (no modifica la lógica existente)
+    const charts = ['chartServicios', 'chartPagos', 'chartEstados', 'chartEvolucionVentas', 'chartInvRotacion', 'chartInvValor', 'chartTopMeses', 'chartTopProductos', 'chartTopDiario'];
+    function hasData(ch) {
+        if (!ch || !ch.data || !ch.data.datasets) return false;
+        return ch.data.datasets.some(ds => (ds.data || []).some(v => v && typeof v === 'object' ? true : Number(v) !== 0 && !isNaN(Number(v))));
+    }
+    function sync() {
+        charts.forEach(id => {
+            const el = document.getElementById('empty-' + id);
+            const cv = document.getElementById(id);
+            if (!el || !cv) return;
+            const ch = (typeof Chart !== 'undefined' && Chart.getChart) ? Chart.getChart(cv) : null;
+            el.style.display = hasData(ch) ? 'none' : 'flex';
+        });
+    }
+    sync();
+    setInterval(sync, 400);
     lucide.createIcons();
 })();
 </script>
