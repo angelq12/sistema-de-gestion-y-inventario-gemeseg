@@ -25,30 +25,30 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-gray-100 font-sans antialiased flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden">
+<body class="bg-slate-50 font-sans antialiased flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden">
 
     <!-- MÓDULO LATERAL (SIDEBAR) -->
     <aside class="w-full lg:w-64 bg-slate-900 text-white flex flex-col justify-between p-3 lg:p-4 shadow-lg shrink-0 lg:overflow-y-auto">
         <div>
             <div class="flex items-center space-x-3 mb-3 lg:mb-8 px-2">
-                <i data-lucide="layout-dashboard" class="w-8 h-8 text-blue-400"></i>
+                <div class="bg-sky-500 p-2 rounded-xl shadow-lg shadow-sky-500/30"><i data-lucide="shield-check" class="w-6 h-6 text-white"></i></div>
                 <span class="text-xl font-bold tracking-wide">Sistema Loja</span>
             </div>
             
             <nav class="flex lg:block gap-2 lg:gap-0 lg:space-y-2 overflow-x-auto pb-1 lg:pb-0">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition">
                     <i data-lucide="receipt"></i>
                     <span>Facturas & Servicios</span>
                 </button>
-                <button onclick="switchTab('inventario')" id="nav-inventario" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
+                <button onclick="switchTab('inventario')" id="nav-inventario" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition">
                     <i data-lucide="boxes"></i>
                     <span>Inventario & Rotación</span>
                 </button>
-                <button onclick="switchTab('ventas')" id="nav-ventas" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
+                <button onclick="switchTab('ventas')" id="nav-ventas" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition">
                     <i data-lucide="shopping-cart"></i>
                     <span>Ventas Agosto</span>
                 </button>
-                <button onclick="switchTab('top-productos')" id="nav-top-productos" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white font-medium transition">
+                <button onclick="switchTab('top-productos')" id="nav-top-productos" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition">
                     <i data-lucide="trophy"></i>
                     <span>Más Vendidos</span>
                 </button>
@@ -65,7 +65,7 @@
     <main class="flex-1 min-w-0 lg:overflow-y-auto p-3 sm:p-6 lg:p-8">
 
         <!-- BOTÓN SUPERIOR DE CARGA DE ARCHIVOS -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center space-x-3">
                 <i data-lucide="file-up" class="w-6 h-6 text-blue-600"></i>
                 <div>
@@ -73,7 +73,7 @@
                     <p class="text-xs text-gray-500">Sube tus archivos DAS2, Inventario o Ventas para actualizar métricas e indicadores de porcentaje.</p>
                 </div>
             </div>
-            <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+            <label class="cursor-pointer bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
                 <i data-lucide="upload" class="w-4 h-4"></i>
                 <span>Seleccionar Archivo</span>
                 <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="handleFileUpload(event)">
@@ -83,7 +83,7 @@
         <!-- SECCIÓN 1: DASHBOARD (FACTURAS DAS2) -->
         <section id="tab-dashboard" class="hidden space-y-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Panel de Control de Facturas & Análisis Porcentual</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Panel de Control de Facturas & Análisis Porcentual</h1>
                 
                 <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
                     <div>
@@ -225,7 +225,7 @@
         <!-- SECCIÓN 2: INVENTARIO COMPLETO Y ROTACIÓN -->
         <section id="tab-inventario" class="space-y-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Módulo de Inventario & Control de Rotación</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Módulo de Inventario & Control de Rotación</h1>
                 
                 <!-- FILTROS DE INVENTARIO -->
                 <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
@@ -325,7 +325,7 @@
         <!-- SECCIÓN 3: VENTAS AGOSTO (MEJORADA) -->
         <section id="tab-ventas" class="hidden space-y-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Módulo de Ventas Agosto</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Módulo de Ventas Agosto</h1>
                 <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
                     <div>
                         <label class="text-xs font-semibold text-gray-500 block">Filtrar por Estado:</label>
@@ -342,9 +342,9 @@
 
             <!-- TARJETAS KPI VENTAS -->
             <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-blue-500">
                     <p class="text-sm text-gray-500 font-medium">Total Ventas (Facturado)</p>
-                    <h3 class="text-xl sm:text-2xl font-bold break-words text-gray-800 mt-1" id="kpi-ventas-total">$0.00</h3>
+                    <h3 class="text-3xl font-bold break-words text-gray-800 mt-1" id="kpi-ventas-total">$0.00</h3>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Costo Total</p>
@@ -356,19 +356,30 @@
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-gray-500 font-medium">Utilidad Neta</p>
-                    <h3 class="text-xl sm:text-2xl font-bold break-words text-blue-600 mt-1" id="kpi-ventas-utilidad-neta">$0.00</h3>
+                    <h3 class="text-xl sm:text-2xl font-bold break-words text-indigo-600 mt-1" id="kpi-ventas-utilidad-neta">$0.00</h3>
                 </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl text-sm text-slate-700" id="resumen-ejecutivo-ventas">
+                <span class="font-bold text-slate-800">Resumen Ejecutivo:</span>
+                En el periodo seleccionado, se registraron <b id="res-ventas-facturas">0</b> facturas con una facturación total de <b id="res-ventas-total">$0.00</b>. El margen de utilidad neta fue del <b id="res-ventas-margen">0.00%</b>.
             </div>
 
             <!-- GRÁFICOS VENTAS -->
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-gray-800 mb-4">Ventas por Cliente</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartVentasCliente"></canvas></div>
+                    <div class="relative w-full h-64 sm:h-72 flex items-center justify-center">
+                        <div id="empty-ventas-cliente" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none"><i data-lucide="bar-chart-2" class="w-10 h-10 mb-2"></i><span class="text-sm">Carga un archivo para ver los datos</span></div>
+                        <canvas id="chartVentasCliente"></canvas>
+                    </div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-gray-800 mb-4">Composición de Costos</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartVentasCostos"></canvas></div>
+                    <div class="relative w-full h-64 sm:h-72 flex items-center justify-center">
+                        <div id="empty-ventas-costos" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none"><i data-lucide="bar-chart-2" class="w-10 h-10 mb-2"></i><span class="text-sm">Carga un archivo para ver los datos</span></div>
+                        <canvas id="chartVentasCostos"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -396,7 +407,7 @@
         <!-- ========================================== -->
         <section id="tab-top-productos" class="hidden space-y-6">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Dashboard de Productos Más Vendidos</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard de Productos Más Vendidos</h1>
                 
                 <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
                     <div>
@@ -419,6 +430,10 @@
                     </div>
                     <button type="button" id="btn-exportar-top-pdf" onclick="exportTopProductosPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
                         <i data-lucide="file-down" class="w-4 h-4"></i>
+                        <span>Reporte Ejecutivo</span>
+                    </button>
+                    <button type="button" onclick="exportTopProductosPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition">
+                        <i data-lucide="download" class="w-4 h-4"></i>
                         <span>Descargar PDF</span>
                     </button>
                 </div>
@@ -511,14 +526,14 @@
         function switchTab(tabId) {
             ['dashboard', 'inventario', 'ventas', 'top-productos'].forEach(id => {
                 document.getElementById(`tab-${id}`).classList.add('hidden');
-                document.getElementById(`nav-${id}`).classList.remove('bg-blue-600', 'text-white');
-                document.getElementById(`nav-${id}`).classList.add('text-gray-300');
+                document.getElementById(`nav-${id}`).classList.remove('bg-sky-500', 'text-white');
+                document.getElementById(`nav-${id}`).classList.add('text-slate-300');
             });
 
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             const activeNav = document.getElementById(`nav-${tabId}`);
-            activeNav.classList.add('bg-blue-600', 'text-white');
-            activeNav.classList.remove('text-gray-300');
+            activeNav.classList.add('bg-sky-500', 'text-white');
+            activeNav.classList.remove('text-slate-300');
         }
 
         // ==========================================
@@ -2313,6 +2328,31 @@
         };
         reader.readAsArrayBuffer(file);
     });
+})();
+</script>
+
+<script>
+(function() {
+    // Estado vacío + Resumen Ejecutivo (Ventas): envuelve renderVentasCharts sin tocar su lógica
+    const origRender = window.renderVentasCharts;
+    window.renderVentasCharts = function(data) {
+        const r = origRender.apply(this, arguments);
+        try {
+            const has = Array.isArray(data) && data.length > 0;
+            ['empty-ventas-cliente', 'empty-ventas-costos'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden', has);
+            });
+            const total = (data || []).reduce((s, d) => s + (d.factura || 0), 0);
+            const neta = (data || []).reduce((s, d) => s + (d.utilidadNeta || 0), 0);
+            const margen = total ? (neta / total) * 100 : 0;
+            document.getElementById('res-ventas-facturas').textContent = (data || []).length;
+            document.getElementById('res-ventas-total').textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('res-ventas-margen').textContent = margen.toFixed(2) + '%';
+        } catch (e) { console.error('Resumen ejecutivo:', e); }
+        return r;
+    };
+    lucide.createIcons();
 })();
 </script>
 </body>
