@@ -28,10 +28,10 @@
 <body class="bg-slate-50 font-sans antialiased flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden">
 
     <!-- MÓDULO LATERAL (SIDEBAR) -->
-    <aside class="w-full lg:w-64 bg-[#0B192C] text-white flex flex-col justify-between p-3 lg:p-4 shadow-lg shrink-0 lg:overflow-y-auto">
+    <aside class="w-full lg:w-64 bg-slate-900 text-white flex flex-col justify-between p-3 lg:p-4 shadow-lg shrink-0 lg:overflow-y-auto">
         <div>
             <div class="flex items-center space-x-3 mb-3 lg:mb-8 px-2">
-                <div class="bg-[#1E88E5] p-2 rounded-xl shadow-lg shadow-sky-500/30"><i data-lucide="shield-check" class="w-6 h-6 text-white"></i></div>
+                <div class="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-600/30"><i data-lucide="shield-check" class="w-6 h-6 text-white"></i></div>
                 <span class="text-xl font-bold tracking-wide">Sistema Loja</span>
             </div>
             
@@ -47,10 +47,6 @@
                 <button onclick="switchTab('ventas')" id="nav-ventas" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition">
                     <i data-lucide="shopping-cart"></i>
                     <span>Ventas Agosto</span>
-                </button>
-                <button onclick="switchTab('top-productos')" id="nav-top-productos" class="lg:w-full shrink-0 whitespace-nowrap flex items-center space-x-3 px-3 lg:px-4 py-2 lg:py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white font-medium transition">
-                    <i data-lucide="trophy"></i>
-                    <span>Más Vendidos</span>
                 </button>
             </nav>
         </div>
@@ -292,6 +288,15 @@
                 </div>
             </div>
 
+            <!-- TOP PRODUCTOS MÁS VENDIDOS -->
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-base font-bold text-slate-800 mb-4">Top Productos Más Vendidos (Unidades)</h2>
+                <div class="relative w-full h-80 sm:h-96">
+                    <canvas id="chartTopVendidos"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartTopVendidos"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div>
+                </div>
+            </div>
+
             <!-- TABLA DINÁMICA DE INVENTARIO CON ROTACIÓN -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="p-4 border-b border-gray-200 flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:justify-between sm:items-center bg-gray-50">
@@ -343,8 +348,9 @@
             <!-- TARJETAS KPI VENTAS -->
             <div class="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-blue-500">
-                    <p class="text-sm text-slate-500 font-medium">Total Ventas (Facturado)</p>
-                    <h3 class="text-2xl sm:text-3xl font-extrabold break-words text-blue-600 mt-1" id="kpi-ventas-total">$0.00</h3>
+                    <p class="text-sm text-slate-500 font-medium">Total Ventas</p>
+                    <h3 class="text-2xl font-extrabold break-words text-blue-600 mt-1" id="kpi-ventas-total">$0.00</h3>
+                    <p class="text-xs text-slate-500 mt-1 flex items-center gap-1"><i data-lucide="trending-up" class="w-3.5 h-3.5 text-blue-500"></i><span>Facturación Bruta</span></p>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <p class="text-sm text-slate-500 font-medium">Costo Total</p>
@@ -370,14 +376,14 @@
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-slate-800 mb-4">Ventas por Cliente</h2>
                     <div class="relative w-full h-64 sm:h-72 flex items-center justify-center">
-                        <div id="empty-ventas-cliente" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none"><i data-lucide="bar-chart-2" class="w-10 h-10 mb-2"></i><span class="text-sm">Carga un archivo para ver los datos</span></div>
+                        <div id="empty-ventas-cliente" class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-10"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div>
                         <canvas id="chartVentasCliente"></canvas>
                     </div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
                     <h2 class="text-base font-bold text-slate-800 mb-4">Composición de Costos</h2>
                     <div class="relative w-full h-64 sm:h-72 flex items-center justify-center">
-                        <div id="empty-ventas-costos" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 pointer-events-none"><i data-lucide="bar-chart-2" class="w-10 h-10 mb-2"></i><span class="text-sm">Carga un archivo para ver los datos</span></div>
+                        <div id="empty-ventas-costos" class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 z-10"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div>
                         <canvas id="chartVentasCostos"></canvas>
                     </div>
                 </div>
@@ -402,74 +408,6 @@
             </div>
         </section>
 
-        <!-- ========================================== -->
-        <!-- MÓDULO NUEVO: PRODUCTOS MÁS VENDIDOS       -->
-        <!-- ========================================== -->
-        <section id="tab-top-productos" class="hidden space-y-6">
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Dashboard de Productos Más Vendidos</h1>
-                
-                <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-200 w-full lg:w-auto">
-                    <div>
-                        <label class="text-xs font-semibold text-slate-500 block">Mes:</label>
-                        <select id="filter-top-mes" onchange="applyTopProductosFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="TODOS">Todos</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-slate-500 block">Categoría:</label>
-                        <select id="filter-top-cat" onchange="applyTopProductosFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="TODOS">Todas</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-slate-500 block">Marca:</label>
-                        <select id="filter-top-marca" onchange="applyTopProductosFilters()" class="w-full text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="TODOS">Todas</option>
-                        </select>
-                    </div>
-                    <button type="button" id="btn-exportar-top-pdf" onclick="exportTopProductosPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition shadow-sm">
-                        <i data-lucide="file-down" class="w-4 h-4"></i>
-                        <span>Reporte Ejecutivo</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- KPIs -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center">
-                    <div>
-                        <p class="text-sm text-red-600 font-bold uppercase tracking-wider">Ventas Totales</p>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-blue-600 mt-1" id="top-kpi-ventas">$0.00</h3>
-                    </div>
-                    <div class="text-gray-400"><i data-lucide="shopping-cart" class="w-8 h-8"></i></div>
-                </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 flex justify-between items-center">
-                    <div>
-                        <p class="text-sm text-red-600 font-bold uppercase tracking-wider">Margen $</p>
-                        <h3 class="text-2xl sm:text-3xl font-extrabold text-emerald-600 mt-1" id="top-kpi-margen">$0.00</h3>
-                    </div>
-                    <div class="text-gray-400"><i data-lucide="wallet" class="w-8 h-8"></i></div>
-                </div>
-            </div>
-
-            <!-- Gráficos -->
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-slate-800 mb-4">Ventas Mensuales</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartTopMeses"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartTopMeses"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
-                </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                    <h2 class="text-base font-bold text-slate-800 mb-4">Ventas por producto (Top 7)</h2>
-                    <div class="relative w-full h-64 sm:h-72"><canvas id="chartTopProductos"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartTopProductos"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-base font-bold text-slate-800 mb-4">Ventas diarias (Mes seleccionado)</h2>
-                <div class="relative w-full h-64 sm:h-80"><canvas id="chartTopDiario"></canvas><div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartTopDiario"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div></div>
-            </div>
-        </section>
 
     </main>
 
@@ -517,18 +455,27 @@
         }
 
         // ==========================================
+        // EMPTY STATE DE GRÁFICOS
+        // ==========================================
+        function setEmptyState(chartId, hasData) {
+            const el = document.getElementById('empty-' + chartId);
+            if (el) el.style.display = hasData ? 'none' : 'flex';
+        }
+        window.setEmptyState = setEmptyState;
+
+        // ==========================================
         // NAVEGACIÓN
         // ==========================================
         function switchTab(tabId) {
-            ['dashboard', 'inventario', 'ventas', 'top-productos'].forEach(id => {
+            ['dashboard', 'inventario', 'ventas'].forEach(id => {
                 document.getElementById(`tab-${id}`).classList.add('hidden');
-                document.getElementById(`nav-${id}`).classList.remove('bg-[#1E88E5]', 'text-white');
+                document.getElementById(`nav-${id}`).classList.remove('bg-blue-600', 'text-white');
                 document.getElementById(`nav-${id}`).classList.add('text-slate-300');
             });
 
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             const activeNav = document.getElementById(`nav-${tabId}`);
-            activeNav.classList.add('bg-[#1E88E5]', 'text-white');
+            activeNav.classList.add('bg-blue-600', 'text-white');
             activeNav.classList.remove('text-slate-300');
         }
 
@@ -719,6 +666,13 @@
             document.getElementById('kpi-ventas-costo').textContent = `$${costoTotal.toFixed(2)}`;
             document.getElementById('kpi-ventas-utilidad-bruta').textContent = `$${utilidadBruta.toFixed(2)}`;
             document.getElementById('kpi-ventas-utilidad-neta').textContent = `$${utilidadNeta.toFixed(2)}`;
+
+            // Resumen Ejecutivo (dinámico)
+            const margenNeto = totalVentas > 0 ? (utilidadNeta / totalVentas) * 100 : 0;
+            const fmtMoney = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('res-ventas-facturas').textContent = filtered.length;
+            document.getElementById('res-ventas-total').textContent = fmtMoney(totalVentas);
+            document.getElementById('res-ventas-margen').textContent = margenNeto.toFixed(2) + '%';
 
             renderVentasTable(filtered);
             renderVentasCharts(filtered);
@@ -1516,6 +1470,7 @@
             const labels = Object.keys(clienteMap);
             const values = Object.values(clienteMap);
 
+            setEmptyState('ventas-cliente', data.length > 0);
             if (chartVentasCliente) chartVentasCliente.destroy();
             const ctx1 = document.getElementById('chartVentasCliente').getContext('2d');
             chartVentasCliente = new Chart(ctx1, {
@@ -1543,6 +1498,7 @@
                 'Técnico': data.reduce((s, d) => s + d.tecnico, 0)
             };
 
+            setEmptyState('ventas-costos', Object.values(costos).some(v => v > 0));
             if (chartVentasCostos) chartVentasCostos.destroy();
             const ctx2 = document.getElementById('chartVentasCostos').getContext('2d');
             chartVentasCostos = new Chart(ctx2, {
@@ -1698,6 +1654,7 @@
                 valorMap[d.estado] = (valorMap[d.estado] || 0) + d.costoTotal;
             });
 
+            ['chartInvRotacion', 'chartInvValor', 'chartTopVendidos'].forEach(id => setEmptyState(id, data.length > 0));
             if (chartInvRotacion) chartInvRotacion.destroy();
             if (chartInvValor) chartInvValor.destroy();
 
@@ -1739,6 +1696,71 @@
                     }
                 }
             });
+
+            // ==========================================
+            // TOP 7 PRODUCTOS MÁS VENDIDOS (barras horizontales)
+            // ==========================================
+            const ventasPorDescripcion = {};
+            data.forEach(d => {
+                const key = (d.descripcion || 'Sin Descripción').toString().trim();
+                ventasPorDescripcion[key] = (ventasPorDescripcion[key] || 0) + (d.ventasSalidas || 0);
+            });
+            const top7 = Object.entries(ventasPorDescripcion)
+                .filter(([, total]) => total > 0)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 7);
+
+            if (window.chartTopVendidosInstance) window.chartTopVendidosInstance.destroy();
+            window.chartTopVendidosInstance = null;
+            setEmptyState('chartTopVendidos', top7.length > 0);
+
+            if (top7.length > 0) {
+                // Etiquetas largas en varias líneas para que no se corten
+                const wrapLabel = (txt, max = 24) => {
+                    const lines = [];
+                    let line = '';
+                    String(txt).split(/\s+/).forEach(word => {
+                        if (line && (line + ' ' + word).length > max) { lines.push(line); line = word; }
+                        else { line = (line + ' ' + word).trim(); }
+                    });
+                    if (line) lines.push(line);
+                    return lines;
+                };
+
+                const ctx3 = document.getElementById('chartTopVendidos').getContext('2d');
+                window.chartTopVendidosInstance = new Chart(ctx3, {
+                    type: 'bar',
+                    data: {
+                        labels: top7.map(([nombre]) => wrapLabel(nombre)),
+                        datasets: [{
+                            label: 'Unidades vendidas',
+                            data: top7.map(([, total]) => total),
+                            backgroundColor: '#34d399',
+                            borderRadius: 4,
+                            maxBarThickness: 28
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: { padding: { right: 16 } },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    title: items => top7[items[0].dataIndex][0],
+                                    label: ctx => `${ctx.parsed.x.toLocaleString('en-US')} unidades vendidas`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
+                            y: { ticks: { autoSkip: false, font: { size: 11 } }, grid: { display: false } }
+                        }
+                    }
+                });
+            }
         }
 
         // ==========================================
@@ -1854,6 +1876,7 @@
                 estadosMap[d.estado] = (estadosMap[d.estado] || 0) + 1;
             });
 
+            ['chartServicios', 'chartPagos', 'chartEstados'].forEach(id => setEmptyState(id, data.length > 0));
             if (chartServicios) chartServicios.destroy();
             if (chartPagos) chartPagos.destroy();
             if (chartEstados) chartEstados.destroy();
@@ -1938,7 +1961,7 @@
             clearTimeout(_resizeTimer);
             _resizeTimer = setTimeout(() => {
                 [chartServicios, chartPagos, chartEstados, chartInvRotacion,
-                 chartInvValor, chartVentasCliente, chartVentasCostos]
+                 chartInvValor, window.chartTopVendidosInstance, chartVentasCliente, chartVentasCostos]
                     .forEach(c => { if (c) c.resize(); });
             }, 150);
         });
@@ -2019,6 +2042,7 @@
 
                 const labels = dias.map(d => `${parseInt(d.slice(8, 10), 10)} ${MESES[parseInt(d.slice(5, 7), 10) - 1]}`);
                 const valores = dias.map(d => porDia[d]);
+                window.setEmptyState('chartEvolucionVentas', valores.some(v => v > 0));
 
                 if (chartEvo) chartEvo.destroy();
                 chartEvo = new Chart(canvas.getContext('2d'), {
@@ -2094,285 +2118,6 @@
         })();
     </script>
 
-<script>
-(function() {
-    // 1. Variables locales del módulo
-    let movimientosData = [];
-    let chartTopMeses, chartTopProductos, chartTopDiario;
-    let topFilteredData = [];
-
-    const COLORS = {
-        red: '#dc2626',
-        green: '#34d399',
-        lightGreen: '#d1fae5',
-        gray: '#9CA3AF'
-    };
-
-    // 2. Utilidades
-    const money = n => '$ ' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const parseDate = (f) => {
-        if (!f) return null;
-        const parts = String(f).split('/');
-        if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
-        return null;
-    };
-
-    // 3. Lógica de Filtros y Renderizado
-    window.applyTopProductosFilters = function() {
-        const mesVal = document.getElementById('filter-top-mes').value;
-        const catVal = document.getElementById('filter-top-cat').value;
-        const marcaVal = document.getElementById('filter-top-marca').value;
-
-        topFilteredData = movimientosData.filter(d => {
-            const matchSalida = d.tipo.toLowerCase() === 'salida';
-            const matchMes = mesVal === 'TODOS' || d.mesNombre === mesVal;
-            const matchCat = catVal === 'TODOS' || d.categoria === catVal;
-            const matchMarca = marcaVal === 'TODOS' || d.marca === marcaVal;
-            return matchSalida && matchMes && matchCat && matchMarca;
-        });
-
-        const totalVentas = topFilteredData.reduce((sum, d) => sum + d.totalVenta, 0);
-        const totalCosto = topFilteredData.reduce((sum, d) => sum + (d.cantidad * d.costo), 0);
-        const margen = totalVentas - totalCosto;
-
-        document.getElementById('top-kpi-ventas').textContent = money(totalVentas);
-        document.getElementById('top-kpi-margen').textContent = money(margen);
-
-        renderTopCharts(topFilteredData);
-    };
-
-    function renderTopCharts(data) {
-        const mesesMap = {};
-        const nombresMeses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-        nombresMeses.forEach(m => mesesMap[m] = 0);
-        
-        const prodMap = {};
-        const diasMap = {};
-        
-        data.forEach(d => {
-            const mesKey = d.mesNombre ? d.mesNombre.slice(0, 3) : '';
-            if (mesKey && mesesMap[mesKey] !== undefined) {
-                mesesMap[mesKey] += d.totalVenta;
-            }
-            prodMap[d.nombre] = (prodMap[d.nombre] || 0) + d.totalVenta;
-            if (d.fecha) {
-                const dia = d.fecha.getDate();
-                diasMap[dia] = (diasMap[dia] || 0) + d.totalVenta;
-            }
-        });
-
-        if (chartTopMeses) chartTopMeses.destroy();
-        chartTopMeses = new Chart(document.getElementById('chartTopMeses').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(mesesMap),
-                datasets: [{
-                    data: Object.values(mesesMap),
-                    backgroundColor: COLORS.red,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => money(c.raw) } } },
-                scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
-            }
-        });
-
-        const sortedProds = Object.entries(prodMap).sort((a, b) => b[1] - a[1]).slice(0, 7);
-        if (chartTopProductos) chartTopProductos.destroy();
-        chartTopProductos = new Chart(document.getElementById('chartTopProductos').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: sortedProds.map(p => p[0]),
-                datasets: [{
-                    data: sortedProds.map(p => p[1]),
-                    backgroundColor: COLORS.green,
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => money(c.raw) } } },
-                scales: { x: { beginAtZero: true, grid: { color: '#f3f4f6' } }, y: { grid: { display: false } } }
-            }
-        });
-
-        const sortedDias = Object.keys(diasMap).sort((a, b) => a - b);
-        if (chartTopDiario) chartTopDiario.destroy();
-        chartTopDiario = new Chart(document.getElementById('chartTopDiario').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: sortedDias,
-                datasets: [{
-                    data: sortedDias.map(d => diasMap[d]),
-                    borderColor: COLORS.green,
-                    backgroundColor: COLORS.lightGreen,
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 3,
-                    pointBackgroundColor: COLORS.green
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => money(c.raw) } } },
-                scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
-            }
-        });
-    }
-
-    // 4. Exportar PDF
-    window.exportTopProductosPDF = async function() {
-        if (topFilteredData.length === 0) return alert('No hay datos para exportar.');
-        const btn = document.getElementById('btn-exportar-top-pdf');
-        const origTxt = btn.innerHTML;
-        
-        try {
-            btn.disabled = true;
-            btn.innerHTML = 'Generando...';
-            
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-            
-            pdf.setFillColor(15, 23, 42);
-            pdf.rect(0, 0, 297, 23, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(14);
-            pdf.text('ADASMEG LOJA - REPORTE DE PRODUCTOS MÁS VENDIDOS', 14, 14);
-
-            const totalVentas = topFilteredData.reduce((sum, d) => sum + d.totalVenta, 0);
-            const totalCosto = topFilteredData.reduce((sum, d) => sum + (d.cantidad * d.costo), 0);
-            const margen = totalVentas - totalCosto;
-
-            pdf.setTextColor(0, 0, 0);
-            pdf.setFontSize(12);
-            pdf.text(`Ventas Totales: ${money(totalVentas)}`, 14, 35);
-            pdf.text(`Margen: ${money(margen)}`, 150, 35);
-
-            const imgMes = chartTopMeses.toBase64Image('image/png', 1.0);
-            const imgProd = chartTopProductos.toBase64Image('image/png', 1.0);
-            const imgDia = chartTopDiario.toBase64Image('image/png', 1.0);
-
-            pdf.addImage(imgMes, 'PNG', 14, 45, 130, 70);
-            pdf.addImage(imgProd, 'PNG', 150, 45, 130, 70);
-            pdf.addImage(imgDia, 'PNG', 14, 120, 266, 70);
-
-            pdf.save('reporte_mas_vendidos.pdf');
-        } catch (e) {
-            console.error(e);
-            alert('Error al generar PDF');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = origTxt;
-            lucide.createIcons();
-        }
-    };
-
-    // 5. Intercepción del Excel
-    const inputFile = document.getElementById('excel-file-input');
-    
-    inputFile.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-            const wb = XLSX.read(new Uint8Array(evt.target.result), { type: 'array' });
-            const sheet = wb.Sheets[wb.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-            
-            const headerRow = (rows[0] || []).join(' ').toUpperCase();
-            if (headerRow.includes('TIPO_MOVIMIENTO') || headerRow.includes('NOMBRE_PRODUCTO')) {
-                
-                movimientosData = rows.slice(1).filter(r => r.length).map(r => {
-                    let mesNombre = '';
-                    const dateObj = parseDate(r[0]);
-                    if (dateObj) {
-                        const m = dateObj.getMonth();
-                        const nm = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-                        mesNombre = nm[m];
-                    }
-
-                    return {
-                        fecha: dateObj,
-                        nombre: r[2] || 'S/N',
-                        categoria: r[3] || 'OTROS',
-                        marca: r[4] || 'N/A',
-                        tipo: r[5] || '',
-                        cantidad: Number(r[6]) || 0,
-                        costo: Number(r[7]) || 0,
-                        venta: Number(r[8]) || 0,
-                        totalVenta: String(r[5]).toLowerCase() === 'salida' ? (Number(r[6]) * Number(r[8])) : 0,
-                        mesNombre: mesNombre
-                    };
-                });
-
-                const meses = ['TODOS', ...new Set(movimientosData.map(d => d.mesNombre).filter(Boolean))];
-                const cats = ['TODOS', ...new Set(movimientosData.map(d => d.categoria))];
-                const marcas = ['TODOS', ...new Set(movimientosData.map(d => d.marca))];
-
-                document.getElementById('filter-top-mes').innerHTML = meses.map(m => `<option value="${m}">${m}</option>`).join('');
-                document.getElementById('filter-top-cat').innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
-                document.getElementById('filter-top-marca').innerHTML = marcas.map(m => `<option value="${m}">${m}</option>`).join('');
-
-                switchTab('top-productos');
-                applyTopProductosFilters();
-            }
-        };
-        reader.readAsArrayBuffer(file);
-    });
-})();
-</script>
-
-<script>
-(function() {
-    // Estado vacío + Resumen Ejecutivo (Ventas): envuelve renderVentasCharts sin tocar su lógica
-    const origRender = window.renderVentasCharts;
-    window.renderVentasCharts = function(data) {
-        const r = origRender.apply(this, arguments);
-        try {
-            const has = Array.isArray(data) && data.length > 0;
-            ['empty-ventas-cliente', 'empty-ventas-costos'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.toggle('hidden', has);
-            });
-            const total = (data || []).reduce((s, d) => s + (d.factura || 0), 0);
-            const neta = (data || []).reduce((s, d) => s + (d.utilidadNeta || 0), 0);
-            const margen = total ? (neta / total) * 100 : 0;
-            document.getElementById('res-ventas-facturas').textContent = (data || []).length;
-            document.getElementById('res-ventas-total').textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            document.getElementById('res-ventas-margen').textContent = margen.toFixed(2) + '%';
-        } catch (e) { console.error('Resumen ejecutivo:', e); }
-        return r;
-    };
-    lucide.createIcons();
-})();
-</script>
-
-<script>
-(function() {
-    // Oculta/muestra el mensaje "Sin datos" según el gráfico tenga datos (no modifica la lógica existente)
-    const charts = ['chartServicios', 'chartPagos', 'chartEstados', 'chartEvolucionVentas', 'chartInvRotacion', 'chartInvValor', 'chartTopMeses', 'chartTopProductos', 'chartTopDiario'];
-    function hasData(ch) {
-        if (!ch || !ch.data || !ch.data.datasets) return false;
-        return ch.data.datasets.some(ds => (ds.data || []).some(v => v && typeof v === 'object' ? true : Number(v) !== 0 && !isNaN(Number(v))));
-    }
-    function sync() {
-        charts.forEach(id => {
-            const el = document.getElementById('empty-' + id);
-            const cv = document.getElementById(id);
-            if (!el || !cv) return;
-            const ch = (typeof Chart !== 'undefined' && Chart.getChart) ? Chart.getChart(cv) : null;
-            el.style.display = hasData(ch) ? 'none' : 'flex';
-        });
-    }
-    sync();
-    setInterval(sync, 400);
-    lucide.createIcons();
-})();
-</script>
+<script>lucide.createIcons();</script>
 </body>
 </html>
