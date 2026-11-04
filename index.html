@@ -12,11 +12,14 @@
         section, main { min-width: 0; }
         canvas { max-width: 100%; }
     </style>
-    <title>Sistema de Gestión & Inventario - Loja</title>
+    <title>ADASMEG Loja - Sistema de Gestión & Inventario</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Plugin Data Labels -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script>Chart.register(ChartDataLabels); Chart.defaults.set('plugins.datalabels', { display: false });</script>
     <!-- SheetJS (Lector de Excel) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- Exportación del dashboard a PDF -->
@@ -32,7 +35,7 @@
         <div>
             <div class="flex items-center space-x-3 mb-3 lg:mb-8 px-2">
                 <div class="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-600/30"><i data-lucide="shield-check" class="w-6 h-6 text-white"></i></div>
-                <span class="text-xl font-bold tracking-wide">Sistema Loja</span>
+                <span class="text-xl font-bold tracking-wide">ADASMEG Loja</span>
             </div>
             
             <nav class="flex lg:block gap-2 lg:gap-0 lg:space-y-2 overflow-x-auto pb-1 lg:pb-0">
@@ -61,7 +64,7 @@
     <main class="flex-1 min-w-0 lg:overflow-y-auto p-3 sm:p-6 lg:p-8">
 
         <!-- BOTÓN SUPERIOR DE CARGA DE ARCHIVOS -->
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="flex items-center space-x-3">
                 <i data-lucide="file-up" class="w-6 h-6 text-blue-600"></i>
                 <div>
@@ -107,7 +110,7 @@
                         </select>
                     </div>
                     <button type="button" id="btn-exportar-dashboard-pdf" onclick="exportDashboardPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition shadow-sm">
-                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
                         <span>Reporte Ejecutivo</span>
                     </button>
                 </div>
@@ -246,7 +249,7 @@
                         </select>
                     </div>
                     <button type="button" id="btn-exportar-inventario-pdf" onclick="exportInventarioPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition shadow-sm">
-                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
                         <span>Reporte Ejecutivo</span>
                     </button>
                 </div>
@@ -289,12 +292,14 @@
             </div>
 
             <!-- TOP PRODUCTOS MÁS VENDIDOS -->
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                <h2 class="text-base font-bold text-slate-800 mb-4">Top Productos Más Vendidos (Unidades)</h2>
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg sm:text-xl font-bold text-slate-800">Top Productos Más Vendidos (Unidades)</h2>
+                <p class="text-sm text-gray-500 mt-1 mb-4" id="top-vendidos-periodo">Periodo: Octubre 2023 - Diciembre 2023</p>
                 <div class="relative w-full h-80 sm:h-96">
                     <canvas id="chartTopVendidos"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/90" id="empty-chartTopVendidos"><i data-lucide="bar-chart-2" class="w-10 h-10 text-gray-300 mb-2"></i><p class="text-sm text-gray-400">Sube un archivo para ver los datos</p></div>
                 </div>
+                <p class="text-xs text-gray-400 mt-4">Fuente: Sistema de Inventario Interno</p>
             </div>
 
             <!-- TABLA DINÁMICA DE INVENTARIO CON ROTACIÓN -->
@@ -339,7 +344,7 @@
                         </select>
                     </div>
                     <button type="button" id="btn-exportar-ventas-pdf" onclick="exportVentasDashboardPDF()" class="col-span-2 sm:col-span-1 justify-center self-end bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center space-x-2 transition shadow-sm">
-                        <i data-lucide="file-down" class="w-4 h-4"></i>
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
                         <span>Reporte Ejecutivo</span>
                     </button>
                 </div>
@@ -1312,10 +1317,8 @@
                 pdf.rect(0, 46, pageWidth, 2, 'F');
                 pdf.setTextColor(255, 255, 255);
                 pdf.setFont('helvetica', 'bold');
-                pdf.setFontSize(11);
-                pdf.text('ADASMEG LOJA', margin, 13);
-                pdf.setFontSize(23);
-                pdf.text('INFORME DE INVENTARIO Y ROTACIÓN', margin, 29);
+                pdf.setFontSize(19);
+                pdf.text('ADASMEG LOJA - INFORME DE INVENTARIO Y ROTACIÓN', margin, 27);
                 pdf.setFont('helvetica', 'normal');
                 pdf.setFontSize(10.5);
                 pdf.setTextColor(191, 219, 254);
@@ -1343,12 +1346,16 @@
 
                 const chartWidth = (pageWidth - (margin * 2) - gap) / 2;
                 const chartY = 110;
-                const chartRotacion = document.getElementById('chartInvRotacion');
-                const chartValor = document.getElementById('chartInvValor');
-                drawStructuredPdfChart(pdf, chartRotacion ? chartRotacion.toDataURL('image/png', 1.0) : null, 'Stock inicial vs. unidades vendidas', margin, chartY, chartWidth, 76);
-                drawStructuredPdfChart(pdf, chartValor ? chartValor.toDataURL('image/png', 1.0) : null, 'Valor invertido por estado / condición', margin + chartWidth + gap, chartY, chartWidth, 76);
+                                drawStructuredPdfChart(pdf, chartInvRotacion ? chartInvRotacion.toBase64Image('image/png', 1.0) : null, 'Stock inicial vs. unidades vendidas', margin, chartY, chartWidth, 76);
+                drawStructuredPdfChart(pdf, chartInvValor ? chartInvValor.toBase64Image('image/png', 1.0) : null, 'Valor invertido por estado / condición', margin + chartWidth + gap, chartY, chartWidth, 76);
 
-                // Página 2: detalle completo de inventario y rotación.
+                // Página 2: Top productos más vendidos.
+                pdf.addPage();
+                drawStructuredPdfHeader(pdf, 'Top productos más vendidos', 'Unidades vendidas • Top 7');
+                const topImg = window.chartTopVendidosInstance ? window.chartTopVendidosInstance.toBase64Image('image/png', 1.0) : null;
+                drawStructuredPdfChart(pdf, topImg, 'Top Productos Más Vendidos (Unidades)', margin, 34, pageWidth - (margin * 2), 150);
+
+                // Página 3: detalle completo de inventario y rotación.
                 pdf.addPage();
                 pdf.autoTable({
                     startY: 31,
@@ -1399,7 +1406,7 @@
                 });
 
                 drawStructuredPdfFooter(pdf);
-                pdf.save(`informe_inventario_rotacion_${new Date().toISOString().slice(0, 10)}.pdf`);
+                pdf.save(`Reporte_Inventario_${new Date().toISOString().slice(0, 10)}.pdf`);
             } catch (error) {
                 console.error('Error al generar el informe de inventario:', error);
                 alert('No se pudo generar el informe PDF. Revisa la consola del navegador para más detalles.');
@@ -1539,7 +1546,7 @@
                     break;
                 }
             }
-            if (headerIndex === -1) headerIndex = 0;
+            if (headerIndex === -1) headerIndex = 3; // Fila 4 del Excel
 
             const headers = rows[headerIndex].map(h => h.toString().trim());
             const dataRows = rows.slice(headerIndex + 1);
@@ -1547,19 +1554,20 @@
             rawInventarioData = dataRows.map(row => {
                 let item = {};
                 headers.forEach((h, idx) => { item[h] = row[idx]; });
+                // Respaldo por posición: C=Descripcion, D=Marca, E=Modelo, F=Estado, G=Cantidad, H=COSTO unit., I=VENTA, J=STOCK
+                const pos = { d: row[2], m: row[3], mo: row[4], e: row[5], c: row[6], cu: row[7], v: row[8], st: row[9] };
+                const descripcion = item['Descripcion'] || item['DESCRIPCION'] || item['Descripción'] || pos.d || 'Sin Descripción';
+                if (!descripcion || descripcion.toString().trim() === '' || descripcion === 'Sin Descripción') return null;
 
-                const descripcion = item['Descripcion'] || item['DESCRIPCION'] || item['Descripción'] || 'Sin Descripción';
-                if (!descripcion || descripcion.toString().trim() === '') return null;
+                const marca = (item['Marca'] || item['MARCA'] || pos.m || 'N/A').toString().trim();
+                const modelo = (item['Modelo'] || item['MODELO'] || pos.mo || 'N/A').toString().trim();
+                const estado = (item['Estado'] || item['ESTADO'] || pos.e || 'GENERAL').toString().trim().toUpperCase();
 
-                const marca = (item['Marca'] || item['MARCA'] || 'N/A').toString().trim();
-                const modelo = (item['Modelo'] || item['MODELO'] || 'N/A').toString().trim();
-                const estado = (item['Estado'] || item['ESTADO'] || 'GENERAL').toString().trim().toUpperCase();
+                const cantInicial = parseFloat(item['Cantidad'] || item['CANTIDAD'] || pos.c || 0) || 0;
+                const ventasSalidas = parseFloat(item['VENTA'] || item['VENTAS'] || pos.v || 0) || 0;
+                const stockActual = parseFloat(item['STOCK DESPUES DE VENTA'] || pos.st || (cantInicial - ventasSalidas)) || 0;
 
-                const cantInicial = parseFloat(item['Cantidad'] || item['CANTIDAD'] || 0) || 0;
-                const ventasSalidas = parseFloat(item['VENTA'] || item['VENTAS'] || 0) || 0;
-                const stockActual = parseFloat(item['STOCK DESPUES DE VENTA'] || (cantInicial - ventasSalidas)) || 0;
-
-                const costoUnit = parseFloat(item['COSTO unitario'] || item['COSTO UNITARIO'] || 0) || 0;
+                const costoUnit = parseFloat(item['COSTO unitario'] || item['COSTO UNITARIO'] || pos.cu || 0) || 0;
                 const costoTotal = parseFloat(item['COSTO TOTAL'] || (cantInicial * costoUnit)) || 0;
 
                 const pctRotacion = cantInicial > 0 ? ((ventasSalidas / cantInicial) * 100) : 0;
@@ -1715,8 +1723,13 @@
             setEmptyState('chartTopVendidos', top7.length > 0);
 
             if (top7.length > 0) {
-                // Etiquetas largas en varias líneas para que no se corten
-                const wrapLabel = (txt, max = 24) => {
+                const totalTop7 = top7.reduce((t, [, v]) => t + v, 0);
+                const pcts = top7.map(([, v]) => totalTop7 > 0 ? (v / totalTop7) * 100 : 0);
+                const maxVal = top7[0][1];
+                const xMax = Math.max(85, Math.ceil((maxVal * 1.3) / 5) * 5);
+
+                // Etiquetas largas: se abrevian y se parten en líneas para que no se corten
+                const wrapLabel = (txt, max = 22, maxLines = 3) => {
                     const lines = [];
                     let line = '';
                     String(txt).split(/\s+/).forEach(word => {
@@ -1724,6 +1737,10 @@
                         else { line = (line + ' ' + word).trim(); }
                     });
                     if (line) lines.push(line);
+                    if (lines.length > maxLines) {
+                        lines.length = maxLines;
+                        lines[maxLines - 1] = lines[maxLines - 1].slice(0, max - 1) + '…';
+                    }
                     return lines;
                 };
 
@@ -1735,28 +1752,51 @@
                         datasets: [{
                             label: 'Unidades vendidas',
                             data: top7.map(([, total]) => total),
-                            backgroundColor: '#34d399',
+                            backgroundColor: top7.map((_, i) => i === 0 ? '#2ecc71' : '#a3e4d7'),
                             borderRadius: 4,
-                            maxBarThickness: 28
+                            borderSkipped: false,
+                            maxBarThickness: 30
                         }]
                     },
                     options: {
                         indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
-                        layout: { padding: { right: 16 } },
+                        layout: { padding: { right: 70 } },
                         plugins: {
                             legend: { display: false },
+                            datalabels: {
+                                display: true,
+                                anchor: 'end',
+                                align: 'end',
+                                clip: false,
+                                color: '#334155',
+                                font: { weight: 'bold', size: 11 },
+                                formatter: (value, ctx) => `${value} (${Math.round(pcts[ctx.dataIndex])}%)`
+                            },
                             tooltip: {
                                 callbacks: {
                                     title: items => top7[items[0].dataIndex][0],
-                                    label: ctx => `${ctx.parsed.x.toLocaleString('en-US')} unidades vendidas`
+                                    label: ctx => [
+                                        `Unidades vendidas: ${ctx.parsed.x.toLocaleString('en-US')}`,
+                                        `Porcentaje del total: ${pcts[ctx.dataIndex].toFixed(1)}%`
+                                    ]
                                 }
                             }
                         },
                         scales: {
-                            x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#f1f5f9' } },
-                            y: { ticks: { autoSkip: false, font: { size: 11 } }, grid: { display: false } }
+                            x: {
+                                beginAtZero: true,
+                                max: xMax,
+                                ticks: { stepSize: 20, callback: v => `${v}u`, color: '#64748b' },
+                                grid: { display: true, drawTicks: false, color: 'rgba(148, 163, 184, 0.22)' },
+                                border: { display: false }
+                            },
+                            y: {
+                                ticks: { autoSkip: false, color: '#334155', font: { size: 11 }, crossAlign: 'far' },
+                                grid: { display: false },
+                                border: { display: false }
+                            }
                         }
                     }
                 });
