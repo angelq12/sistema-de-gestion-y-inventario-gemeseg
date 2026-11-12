@@ -415,8 +415,7 @@
 
 
     </main>
-
-    <script>
+        <script>
         lucide.createIcons();
 
         let rawDas2Data = [];
@@ -527,7 +526,9 @@
                     }
                 }
                 if (isDas2) {
-                    const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                    // cellDates:false (por defecto) => las fechas llegan como serial numérico o texto;
+                    // raw:true conserva el valor original de la celda para que parseFecha lo interprete.
+                    const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: true });
                     processDAS2(jsonData);
                     switchTab('dashboard');
                     return;
@@ -560,24 +561,9 @@
         // PROCESAMIENTO MÓDULO VENTAS (CORREGIDO)
         // ==========================================
         function processVentasFromRows(rows, headerIndex) {
-            console.log('Archivo de Ventas detectado. Fila de encabezados:', headerIndex);
-
             const headers = rows[headerIndex].map(h => h.toString().trim());
-            // Mapeo de columnas normalizadas
             const colMap = {};
-            headers.forEach((h, idx) => {
-                const key = normalizeKey(h);
-                colMap[key] = idx;
-            });
-            console.log('Mapa de columnas:', colMap);
-
-            // Función getVal que normaliza automáticamente la clave
-            const getVal = (key) => {
-                const normalizedKey = normalizeKey(key);
-                const idx = colMap[normalizedKey];
-                if (idx === undefined) return undefined;
-                return rows[rowIndex][idx];
-            };
+            headers.forEach((h, idx) => { colMap[normalizeKey(h)] = idx; });
 
             // Extraer datos desde la siguiente fila hasta "TOTALES"
             const dataRows = [];
@@ -589,27 +575,17 @@
                 if (row.every(cell => cell === undefined || cell === null || cell === '')) continue;
                 dataRows.push(row);
             }
-            console.log('Filas de datos extraídas:', dataRows.length);
 
-            rawVentasData = dataRows.map((row, idx) => {
-                // Asignamos rowIndex para que getVal pueda acceder
-                const rowIndex = headerIndex + 1 + idx;
-                // Re-definimos getVal con el rowIndex actual
+            rawVentasData = dataRows.map(row => {
                 const getRowVal = (key) => {
-                    const normalizedKey = normalizeKey(key);
-                    const colIdx = colMap[normalizedKey];
-                    if (colIdx === undefined) return undefined;
-                    return row[colIdx];
+                    const colIdx = colMap[normalizeKey(key)];
+                    return colIdx === undefined ? undefined : row[colIdx];
                 };
 
                 const cliente = getRowVal('CLIENTE') || '';
                 if (!cliente) return null;
 
-                // Extraer el valor de FACTURA S/I (monto de la factura)
-                const facturaRaw = getRowVal('FACTURA S/I');
-                const factura = parseNumber(facturaRaw);
-                console.log(`Fila ${idx+1}: cliente=${cliente}, facturaRaw=${facturaRaw}, factura=${factura}`);
-
+                const factura = parseNumber(getRowVal('FACTURA S/I'));
                 const notaCred = getRowVal('NOTA CRED') || '';
                 const menosImp = parseNumber(getRowVal('MENOS IMP VENTAS') || 0);
                 const costoTotal = parseNumber(getRowVal('COSTO TOTAL') || 0);
@@ -636,8 +612,6 @@
                 };
             }).filter(d => d !== null);
 
-            console.log('Datos de ventas procesados:', rawVentasData.length);
-
             // Poblar filtro de estado
             const estados = ['TODOS', ...new Set(rawVentasData.map(d => d.estado).filter(e => e))];
             document.getElementById('filter-ventas-estado').innerHTML = estados.map(e => `<option value="${e}">${e}</option>`).join('');
@@ -646,7 +620,6 @@
         }
 
         function applyVentasFilters() {
-            console.log('Aplicando filtros.');
             const estadoFilter = document.getElementById('filter-ventas-estado').value;
             const searchFilter = document.getElementById('search-ventas').value.toLowerCase();
 
@@ -657,15 +630,11 @@
                 return matchEstado && matchSearch;
             });
 
-            console.log('Datos filtrados:', filtered.length);
-
             // KPIs
             const totalVentas = filtered.reduce((sum, d) => sum + d.factura, 0);
             const costoTotal = filtered.reduce((sum, d) => sum + d.costoTotal, 0);
             const utilidadBruta = filtered.reduce((sum, d) => sum + d.utilidadBruta, 0);
             const utilidadNeta = filtered.reduce((sum, d) => sum + d.utilidadNeta, 0);
-
-            console.log(`Total Ventas: ${totalVentas}, Costo Total: ${costoTotal}, Utilidad Bruta: ${utilidadBruta}, Utilidad Neta: ${utilidadNeta}`);
 
             document.getElementById('kpi-ventas-total').textContent = `$${totalVentas.toFixed(2)}`;
             document.getElementById('kpi-ventas-costo').textContent = `$${costoTotal.toFixed(2)}`;
@@ -682,7 +651,7 @@
             renderVentasTable(filtered);
             renderVentasCharts(filtered);
         }
-
+            
         // ==========================================
         // INFORME MENSUAL DE VENTAS EN PDF
         // ==========================================
@@ -1346,13 +1315,16 @@
 
                 const chartWidth = (pageWidth - (margin * 2) - gap) / 2;
                 const chartY = 110;
-                                drawStructuredPdfChart(pdf, chartInvRotacion ? chartInvRotacion.toBase64Image('image/png', 1.0) : null, 'Stock inicial vs. unidades vendidas', margin, chartY, chartWidth, 76);
-                drawStructuredPdfChart(pdf, chartInvValor ? chartInvValor.toBase64Image('image/png', 1.0) : null, 'Valor invertido por estado / condición', margin + chartWidth + gap, chartY, chartWidth, 76);
+                const imgRot = (chartInvRotacion && typeof chartInvRotacion.toBase64Image === 'function') ? chartInvRotacion.toBase64Image('image/png', 1.0) : null;
+                const imgVal = (chartInvValor && typeof chartInvValor.toBase64Image === 'function') ? chartInvValor.toBase64Image('image/png', 1.0) : null;
+                drawStructuredPdfChart(pdf, imgRot, 'Stock inicial vs. unidades vendidas', margin, chartY, chartWidth, 76);
+                drawStructuredPdfChart(pdf, imgVal, 'Valor invertido por estado / condición', margin + chartWidth + gap, chartY, chartWidth, 76);
 
                 // Página 2: Top productos más vendidos.
                 pdf.addPage();
                 drawStructuredPdfHeader(pdf, 'Top productos más vendidos', 'Unidades vendidas • Top 7');
-                const topImg = window.chartTopVendidosInstance ? window.chartTopVendidosInstance.toBase64Image('image/png', 1.0) : null;
+                const topChart = window.chartTopVendidosInstance;
+                const topImg = (topChart && typeof topChart.toBase64Image === 'function') ? topChart.toBase64Image('image/png', 1.0) : null;
                 drawStructuredPdfChart(pdf, topImg, 'Top Productos Más Vendidos (Unidades)', margin, 34, pageWidth - (margin * 2), 150);
 
                 // Página 3: detalle completo de inventario y rotación.
@@ -1417,7 +1389,7 @@
                 lucide.createIcons();
             }
         }
-
+            
         function renderVentasTable(data) {
             const headElem = document.getElementById('ventas-table-head');
             const tbody = document.getElementById('table-body-ventas');
@@ -1824,9 +1796,9 @@
                 }
 
                 return {
-                    factura: row['Número de Factura'] || row['Factura'] || 'S/N',
+                    factura: String(row['Número de Factura'] || row['Factura'] || 'S/N'),
                     mes: mesNombre,
-                    cliente: row['Cliente '] || row['Cliente'] || 'Consumidor Final',
+                    cliente: String(row['Cliente '] || row['Cliente'] || 'Consumidor Final'),
                     servicio: (row['TIPO DE SERVICIO'] || 'OTROS').toString().trim().toUpperCase(),
                     pago: (row['forma de pago'] || row['Forma de Pago'] || 'NO ESPECIFICADO').toString().trim().toUpperCase(),
                     monto: monto,
@@ -1864,7 +1836,7 @@
                 const matchServicio = servicioFilter === 'TODOS' || item.servicio === servicioFilter;
                 const matchPago = pagoFilter === 'TODOS' || item.pago === pagoFilter;
                 const matchEstado = estadoFilter === 'TODOS' || item.estado === estadoFilter;
-                const matchSearch = item.cliente.toLowerCase().includes(searchFilter) || item.factura.toLowerCase().includes(searchFilter);
+                const matchSearch = String(item.cliente).toLowerCase().includes(searchFilter) || String(item.factura).toLowerCase().includes(searchFilter);
                 return matchMes && matchServicio && matchPago && matchEstado && matchSearch;
             });
 
@@ -1993,6 +1965,7 @@
                 </tr>
             `).join('');
         }
+
         // ==========================================
         // RESPONSIVE: ajustar gráficos al cambiar zoom / tamaño
         // ==========================================
@@ -2006,7 +1979,7 @@
             }, 150);
         });
     </script>
-
+    
     <!-- Evolución de ventas (módulo añadido; no modifica el código existente) -->
     <script>
         (function () {
@@ -2021,17 +1994,42 @@
 
             function parseFecha(v) {
                 if (v === null || v === undefined || v === '') return null;
-                if (typeof v === 'number') {               // serial de Excel
-                    const d = new Date(Math.round((v - 25569) * 86400000));
-                    return isNaN(d) ? null : iso(d);
-                }
                 if (v instanceof Date) return isNaN(v) ? null : iso(v);
+
                 const t = String(v).trim();
+
+                // Serial de Excel (número o texto numérico)
+                if (typeof v === 'number' || /^\d+(\.\d+)?$/.test(t)) {
+                    const n = Number(v);
+                    if (n > 20000 && n < 80000) {
+                        const d = new Date(Math.floor(n - 25569) * 86400000);
+                        return isNaN(d) ? null : iso(d);
+                    }
+                    return null;
+                }
+
+                // YYYY-MM-DD
                 let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
                 if (m) return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
-                m = t.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-                if (m) return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+
+                // DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY (año de 2 o 4 dígitos)
+                m = t.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+                if (m) {
+                    let y = Number(m[3]);
+                    if (y < 100) y += 2000;
+                    return `${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+                }
                 return null;
+            }
+
+            // Busca la columna de fecha sin importar mayúsculas, tildes o espacios ("Fecha ", "FECHA EMISIÓN", etc.)
+            function leerFecha(row) {
+                const norm = k => k.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '');
+                const keys = Object.keys(row || {});
+                const key = keys.find(k => norm(k) === 'FECHA')
+                         || keys.find(k => norm(k).startsWith('FECHA'))
+                         || keys.find(k => norm(k).includes('FECHA'));
+                return key ? parseFecha(row[key]) : null;
             }
 
             function setBotones() {
@@ -2144,7 +2142,7 @@
             // Enganches sin modificar las funciones originales
             const origProcess = window.processDAS2;
             window.processDAS2 = function (data) {
-                fechas = (data || []).map(r => parseFecha(r['Fecha'] !== undefined ? r['Fecha'] : r['FECHA']));
+                fechas = (data || []).map(leerFecha);
                 const r = origProcess.apply(this, arguments);
                 try { render(); } catch (e) { console.error('Evolución de ventas:', e); }
                 return r;
