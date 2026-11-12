@@ -2071,7 +2071,14 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        layout: { padding: { top: 28, right: 24, left: 8 } },
+                        layout: {
+                        padding: {
+                            top: 30,    // Espacio para el número de arriba
+                            right: 40,  // Evita que el número de Octubre se corte
+                            left: 10,
+                            bottom: 0
+                        }
+                    },
                         plugins: {
                             legend: { display: false },
                             tooltip: {
