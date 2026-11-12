@@ -860,69 +860,48 @@
                 });
             }
 
-            // 4. Evolución mensual
-            // 4. Comparativo por cliente: Octubre vs Septiembre vs Agosto
-            const mesesCmp = [
-                { mes: 'Octubre',    label: 'Facturación Octubre',    color: '#3b82f6' },
-                { mes: 'Septiembre', label: 'Facturación Septiembre', color: '#10b981' },
-                { mes: 'Agosto',     label: 'Facturación Agosto',     color: '#ef4444' }
-            ];
-            const porClienteMes = {};
+                      // 4. Evolución mensual (totales globales por mes)
+            const porMes = {};
             base.forEach(d => {
-                const c = porClienteMes[d.cliente] || (porClienteMes[d.cliente] = { Octubre: 0, Septiembre: 0, Agosto: 0 });
-                if (d.mes in c) c[d.mes] += d.factura;
+                const m = porMes[d.mes] || (porMes[d.mes] = { n: d.mesNum, v: 0, c: 0, u: 0 });
+                m.v += d.factura; m.c += d.costoTotal; m.u += d.utilidadNeta;
             });
-            const clientesEvo = Object.entries(porClienteMes)
-                .filter(([, v]) => v.Octubre + v.Septiembre + v.Agosto !== 0)
-                .sort((a, b) => (b[1].Octubre - a[1].Octubre) ||
-                                ((b[1].Septiembre + b[1].Agosto) - (a[1].Septiembre + a[1].Agosto)));
-            setEmptyState('ventas-evolucion', clientesEvo.length > 0);
-            if (clientesEvo.length > 0) {
+            const meses = Object.entries(porMes).sort((a, b) => a[1].n - b[1].n);
+            setEmptyState('ventas-evolucion', meses.length > 0);
+            if (meses.length > 0) {
+                const line = (label, key, color) => ({
+                    label, data: meses.map(m => m[1][key]), borderColor: color, backgroundColor: color + '22',
+                    borderWidth: 2.5, tension: 0.3, pointRadius: 4, pointBackgroundColor: color
+                });
                 chartVentasEvolucion = new Chart(document.getElementById('chartVentasEvolucion'), {
                     type: 'line',
                     data: {
-                        labels: clientesEvo.map(c => c[0]),
-                        datasets: mesesCmp.map(m => ({
-                            label: m.label,
-                            data: clientesEvo.map(c => c[1][m.mes] || 0),
-                            borderColor: m.color,
-                            backgroundColor: m.color + '22',
-                            borderWidth: 2.5,
-                            tension: 0.3,
-                            pointRadius: 4,
-                            pointBackgroundColor: m.color
-                        }))
+                        labels: meses.map(m => m[0]),
+                        datasets: [
+                            line('Total Ventas', 'v', '#3b82f6'),
+                            line('Costo Total', 'c', '#ef4444'),
+                            line('Utilidad Neta', 'u', '#10b981')
+                        ]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
+                        layout: { padding: { top: 10, right: 20 } },
                         plugins: {
                             legend: { position: 'bottom' },
-                            tooltip: {
-                                callbacks: {
-                                    title: items => clientesEvo[items[0].dataIndex][0],
-                                    label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}`
-                                }
-                            }
+                            tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}` } }
                         },
                         scales: {
-                            x: {
-                                ticks: {
-                                    autoSkip: false, maxRotation: 60, minRotation: 45,
-                                    callback: function (v) { return trunc(String(this.getLabelForValue(v))); }
-                                }
-                            },
                             y: {
                                 beginAtZero: true,
-                                title: { display: true, text: 'Monto Facturado ($)' },
+                                grace: '15%',
+                                title: { display: true, text: 'Monto ($)' },
                                 ticks: { callback: v => compact(v) }
                             }
                         }
                     }
                 });
             }
-        }
-
         function exportVentasDashboardPDF() {
             const data = getVentasFiltered(false);
             if (!data.length) { alert('No hay datos de ventas para exportar. Carga el archivo o ajusta los filtros.'); return; }
