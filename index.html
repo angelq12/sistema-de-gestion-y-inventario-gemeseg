@@ -1973,51 +1973,70 @@
     </script>
     
         <!-- Evolución de ventas: recaudación mensual (barras, columna MES) -->
+      <!-- Evolución de ventas: recaudación mensual (línea con área, columna MES) -->
     <script>
         (function () {
             const COLOR = '#D34A68';
+            const COLOR_FILL = 'rgba(211, 74, 104, 0.18)';
             let chartEvo = null;
 
-            const money = n => '$ ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const money = n => '$' + (Number(n) || 0).toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            // Convierte 7, "7", "7.0" → "Julio". Si ya es texto (ej. "Agosto"), lo normaliza.
+            function nombreMes(valor) {
+                if (valor === undefined || valor === null || valor === '') return null;
+                const n = parseInt(valor, 10);
+                if (!isNaN(n) && mesesNombres[n]) return mesesNombres[n];
+                const t = String(valor).trim();
+                if (!t || t.toUpperCase() === 'NO ESPECIFICADO') return null;
+                return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+            }
 
             function render() {
                 const canvas = document.getElementById('chartEvolucionVentas');
                 if (!canvas || typeof rawDas2Data === 'undefined') return;
 
                 const val = id => document.getElementById(id).value;
-                const mes = val('filter-mes');
+                const mesF = val('filter-mes');
                 const servicio = val('filter-servicio');
                 const pago = val('filter-pago');
                 const q = val('search-das2').toLowerCase();
 
-                // Solo facturas PAGADAS; respeta Mes, Servicio, Pago y búsqueda
+                // Solo filas con ESTADO = PAGADO (sin importar mayúsculas); respeta Mes, Servicio, Pago y búsqueda
                 const pagadas = rawDas2Data.filter(d =>
-                    d.estado === 'PAGADO' &&
-                    (mes === 'TODOS' || d.mes === mes) &&
+                    String(d.estado || '').trim().toUpperCase() === 'PAGADO' &&
+                    (mesF === 'TODOS' || d.mes === mesF) &&
                     (servicio === 'TODOS' || d.servicio === servicio) &&
                     (pago === 'TODOS' || d.pago === pago) &&
                     (String(d.cliente).toLowerCase().includes(q) || String(d.factura).toLowerCase().includes(q))
                 );
 
-                // Agrupar por nombre de mes (Enero ... Diciembre)
+                // Agrupar por nombre de mes y sumar Monto
                 const porMes = {};
                 let total = 0;
+                let tickets = 0;
                 pagadas.forEach(d => {
-                    porMes[d.mes] = (porMes[d.mes] || 0) + d.monto;
-                    total += d.monto;
+                    const mes = nombreMes(d.mes);
+                    const monto = Number(d.monto) || 0;
+                    if (!mes) return;
+                    porMes[mes] = (porMes[mes] || 0) + monto;
+                    total += monto;
+                    tickets++;
                 });
 
-                // Orden cronológico
+                // Orden cronológico (Enero ... Diciembre)
                 const orden = Object.values(mesesNombres);
                 const meses = Object.keys(porMes).sort((a, b) => {
                     const ia = orden.indexOf(a), ib = orden.indexOf(b);
                     return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
                 });
                 const valores = meses.map(m => porMes[m]);
-
-                const tickets = pagadas.length;
                 const nMeses = Math.max(meses.length, 1);
 
+                // KPIs
                 document.getElementById('evo-total').textContent = money(total);
                 document.getElementById('evo-promedio').textContent = money(total / nMeses);
                 document.getElementById('evo-tickets').textContent = tickets.toLocaleString('en-US');
@@ -2027,30 +2046,54 @@
 
                 if (chartEvo) chartEvo.destroy();
                 chartEvo = new Chart(canvas.getContext('2d'), {
-                    type: 'bar',
+                    type: 'line',
                     data: {
                         labels: meses,
                         datasets: [{
                             label: 'Recaudación ($)',
                             data: valores,
-                            backgroundColor: COLOR,
-                            borderRadius: 6,
-                            maxBarThickness: 70
+                            borderColor: COLOR,
+                            backgroundColor: COLOR_FILL,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#FFFFFF',
+                            pointBorderColor: COLOR,
+                            pointBorderWidth: 2
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: { padding: { top: 28, right: 24, left: 8 } },
                         plugins: {
                             legend: { display: false },
-                            tooltip: { callbacks: { label: c => money(c.raw) } }
+                            tooltip: {
+                                callbacks: {
+                                    // Ej.: "Septiembre: $18,059.07"
+                                    label: c => `${c.label}: ${money(c.raw)}`
+                                }
+                            },
+                            datalabels: {
+                                display: true,
+                                anchor: 'end',
+                                align: 'top',
+                                offset: 6,
+                                clip: false,
+                                color: '#374151',
+                                font: { weight: 'bold', size: 11 },
+                                formatter: v => money(v)
+                            }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
+                                grace: '15%',
                                 grid: { color: '#ECECEC' },
                                 border: { display: false },
-                                ticks: { color: '#9CA3AF', callback: v => '$ ' + v.toLocaleString('en-US') }
+                                ticks: { color: '#9CA3AF', callback: v => '$' + v.toLocaleString('en-US') }
                             },
                             x: {
                                 grid: { display: false },
