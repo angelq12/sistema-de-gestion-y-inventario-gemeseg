@@ -860,36 +860,39 @@
                 });
             }
 
-            // 4. Comparativa de facturación por cliente (Octubre / Septiembre / Agosto)
-            const mesesCmp = [
-                { mes: 'Octubre',    label: 'Facturación Octubre',    color: '#3b82f6' },
-                { mes: 'Septiembre', label: 'Facturación Septiembre', color: '#10b981' },
-                { mes: 'Agosto',     label: 'Facturación Agosto',     color: '#ef4444' }
-            ];
-            const porClienteMes = {};
+            // 4. Evolución mensual global (Agosto → Septiembre → Octubre)
+            //    Usa dataSinFiltroMes (base) para mostrar siempre los 3 meses, sin importar el filtro de Mes.
+            const mesesEvo = ['Agosto', 'Septiembre', 'Octubre'];
+            const totalesMes = {};
+            mesesEvo.forEach(m => { totalesMes[m] = { factura: 0, costo: 0, utilidad: 0 }; });
             base.forEach(d => {
-                const c = porClienteMes[d.cliente] || (porClienteMes[d.cliente] = { Octubre: 0, Septiembre: 0, Agosto: 0 });
-                if (d.mes in c) c[d.mes] += d.factura;
+                const t = totalesMes[d.mes];
+                if (!t) return;
+                t.factura += d.factura || 0;
+                t.costo += d.costoTotal || 0;
+                t.utilidad += d.utilidadNeta || 0;
             });
-            const clientesEvo = Object.entries(porClienteMes)
-                .filter(([, v]) => v.Octubre + v.Septiembre + v.Agosto !== 0)
-                .sort((a, b) => (b[1].Octubre - a[1].Octubre) ||
-                                ((b[1].Septiembre + b[1].Agosto) - (a[1].Septiembre + a[1].Agosto)));
-            setEmptyState('ventas-evolucion', clientesEvo.length > 0);
-            if (clientesEvo.length > 0) {
+            const hayEvo = mesesEvo.some(m => totalesMes[m].factura !== 0 || totalesMes[m].costo !== 0 || totalesMes[m].utilidad !== 0);
+            setEmptyState('ventas-evolucion', hayEvo);
+            if (hayEvo) {
+                const lineas = [
+                    { label: 'Total Ventas', key: 'factura',  color: '#3b82f6' },
+                    { label: 'Costo Total',  key: 'costo',    color: '#ef4444' },
+                    { label: 'Utilidad Neta', key: 'utilidad', color: '#10b981' }
+                ];
                 chartVentasEvolucion = new Chart(document.getElementById('chartVentasEvolucion'), {
                     type: 'line',
                     data: {
-                        labels: clientesEvo.map(c => c[0]),
-                        datasets: mesesCmp.map(m => ({
-                            label: m.label,
-                            data: clientesEvo.map(c => c[1][m.mes] || 0),
-                            borderColor: m.color,
-                            backgroundColor: m.color + '22',
+                        labels: mesesEvo,
+                        datasets: lineas.map(l => ({
+                            label: l.label,
+                            data: mesesEvo.map(m => totalesMes[m][l.key]),
+                            borderColor: l.color,
+                            backgroundColor: l.color,
                             borderWidth: 2.5,
                             tension: 0.3,
                             pointRadius: 4,
-                            pointBackgroundColor: m.color
+                            pointBackgroundColor: l.color
                         }))
                     },
                     options: {
@@ -900,22 +903,16 @@
                             legend: { position: 'bottom' },
                             tooltip: {
                                 callbacks: {
-                                    title: items => clientesEvo[items[0].dataIndex][0],
-                                    label: c => ` ${mesesCmp[c.datasetIndex].mes}: ${money(c.parsed.y)}`
+                                    label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}`
                                 }
                             }
                         },
                         scales: {
-                            x: {
-                                ticks: {
-                                    autoSkip: false, maxRotation: 45, minRotation: 45,
-                                    callback: function (v) { return trunc(String(this.getLabelForValue(v))); }
-                                }
-                            },
+                            x: { grid: { display: false } },
                             y: {
                                 beginAtZero: true,
                                 grace: '15%',
-                                title: { display: true, text: 'Monto Facturado ($)' },
+                                title: { display: true, text: 'Monto ($)' },
                                 ticks: { callback: v => compact(v) }
                             }
                         }
