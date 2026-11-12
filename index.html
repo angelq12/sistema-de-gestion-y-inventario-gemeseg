@@ -157,10 +157,16 @@
             </div>
 
              <!-- EVOLUCIÓN DE VENTAS (mensual, USD) -->
-            <div class="p-5 sm:p-6 rounded-xl shadow-sm border border-gray-200" style="background:#FFFFFF">
-                <div class="mb-5">
-                    <h2 class="text-lg font-bold text-slate-800">Evolución de ventas</h2>
-                    <p class="text-xs mt-0.5" style="color:#9CA3AF">Recaudación por mes</p>
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-5">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800">Evolución de ventas</h2>
+                        <p class="text-xs mt-0.5" style="color:#9CA3AF">Recaudación por mes</p>
+                    </div>
+                    <select id="evo-vista" class="self-start text-sm bg-gray-50 border border-gray-300 rounded p-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="total">Total Recaudado</option>
+                        <option value="servicio">Evolución por Servicio</option>
+                        <option value="pago">Evolución por Tipo de Pago</option>
+                    </select>
                 </div>
 
 <div class="grid grid-cols-2 lg:grid-cols-4 mb-5">
@@ -1145,14 +1151,37 @@
                 drawStructuredPdfKpi(pdf, margin + ((cardWidth + gap) * 2), cardY, cardWidth, 'SALDO PENDIENTE', formatPdfMoney(totalSaldo), PDF_REPORT_COLORS.red);
                 drawStructuredPdfKpi(pdf, margin + ((cardWidth + gap) * 3), cardY, cardWidth, 'EFECTIVIDAD DE COBRO', `${efectividad.toFixed(1)}%`, PDF_REPORT_COLORS.amber);
 
+                               // Gráfico de evolución: Página 1, debajo de los KPIs (conserva la proporción del lienzo)
+                const evoCanvas = document.getElementById('chartEvolucionVentas');
+                const evoVista = (document.getElementById('evo-vista') || {}).value || 'total';
+                const evoSufijo = evoVista === 'servicio' ? ' - Por Servicio' : (evoVista === 'pago' ? ' - Por Tipo de Pago' : '');
+                let evoImg = null;
+                if (evoCanvas && evoCanvas.width > 0 && evoCanvas.height > 0) {
+                    const evoUrl = evoCanvas.toDataURL('image/png', 1.0);
+                    if (evoUrl && evoUrl.length > 100) evoImg = evoUrl;
+                }
+                const evoY = cardY + 27 + 6;
+                const evoMaxH = 196 - evoY;
+                const evoRatio = (evoCanvas && evoCanvas.height) ? evoCanvas.width / evoCanvas.height : 3.5;
+                let evoW = pageWidth - (margin * 2);
+                let evoH = ((evoW - 8) / evoRatio) + 15;
+                if (evoH > evoMaxH) { evoH = evoMaxH; evoW = ((evoH - 15) * evoRatio) + 8; }
+                const evoX = (pageWidth - evoW) / 2;
+                drawStructuredPdfChart(pdf, evoImg, 'Evolución de Recaudación Mensual' + evoSufijo, evoX, evoY, evoW, evoH);
+
+                // Página 2: gráficos de distribución (servicio, tipo de pago, estado)
+                pdf.addPage();
+                drawStructuredPdfHeader(pdf, 'Distribución por servicio, pago y estado', 'Cartera • Valores en USD');
                 const chartWidth = (pageWidth - (margin * 2) - (gap * 2)) / 3;
-                const chartY = 110;
+                const chartY = 34;
                 const chartServicios = document.getElementById('chartServicios');
                 const chartPagos = document.getElementById('chartPagos');
                 const chartEstados = document.getElementById('chartEstados');
-                drawStructuredPdfChart(pdf, chartServicios ? chartServicios.toDataURL('image/png', 1.0) : null, 'Participación por servicio', margin, chartY, chartWidth, 76);
-                drawStructuredPdfChart(pdf, chartPagos ? chartPagos.toDataURL('image/png', 1.0) : null, 'Monto por tipo de pago', margin + chartWidth + gap, chartY, chartWidth, 76);
-                drawStructuredPdfChart(pdf, chartEstados ? chartEstados.toDataURL('image/png', 1.0) : null, 'Pagados vs. pendientes', margin + ((chartWidth + gap) * 2), chartY, chartWidth, 76);
+                const distRatio = (chartServicios && chartServicios.height) ? chartServicios.width / chartServicios.height : 1.2;
+                const distH = Math.min(120, Math.max(60, ((chartWidth - 8) / distRatio) + 15));
+                drawStructuredPdfChart(pdf, chartServicios ? chartServicios.toDataURL('image/png', 1.0) : null, 'Participación por servicio', margin, chartY, chartWidth, distH);
+                drawStructuredPdfChart(pdf, chartPagos ? chartPagos.toDataURL('image/png', 1.0) : null, 'Monto por tipo de pago', margin + chartWidth + gap, chartY, chartWidth, distH);
+                drawStructuredPdfChart(pdf, chartEstados ? chartEstados.toDataURL('image/png', 1.0) : null, 'Pagados vs. pendientes', margin + ((chartWidth + gap) * 2), chartY, chartWidth, distH);
 
                 // Página 2: detalle completo de facturas y servicios.
                 pdf.addPage();
@@ -1977,10 +2006,14 @@
     
         <!-- Evolución de ventas: recaudación mensual (barras, columna MES) -->
       <!-- Evolución de ventas: recaudación mensual (línea con área, columna MES) -->
+        <!-- Evolución de ventas: recaudación mensual (Total / por Servicio / por Tipo de Pago) -->
     <script>
         (function () {
             const COLOR = '#D34A68';
             const COLOR_FILL = 'rgba(211, 74, 104, 0.18)';
+            const PALETTE = ['#D34A68', '#2563EB', '#059669', '#D97706', '#7C3AED',
+                             '#0891B2', '#DB2777', '#65A30D', '#475569', '#EA580C'];
+            const colorSerie = i => PALETTE[i] || `hsl(${(i * 47) % 360} 60% 45%)`;
             let chartEvo = null;
 
             const money = n => '$' + (Number(n) || 0).toLocaleString('en-US', {
@@ -2003,12 +2036,14 @@
                 if (!canvas || typeof rawDas2Data === 'undefined') return;
 
                 const val = id => document.getElementById(id).value;
+                const vista = (document.getElementById('evo-vista') || {}).value || 'total';
+                const multi = vista === 'servicio' || vista === 'pago';
                 const mesF = val('filter-mes');
                 const servicio = val('filter-servicio');
                 const pago = val('filter-pago');
                 const q = val('search-das2').toLowerCase();
 
-                // Solo filas con ESTADO = PAGADO (sin importar mayúsculas); respeta Mes, Servicio, Pago y búsqueda
+                // Solo filas PAGADAS; respeta Mes, Servicio, Pago y búsqueda
                 const pagadas = rawDas2Data.filter(d =>
                     String(d.estado || '').trim().toUpperCase() === 'PAGADO' &&
                     (mesF === 'TODOS' || d.mes === mesF) &&
@@ -2017,8 +2052,10 @@
                     (String(d.cliente).toLowerCase().includes(q) || String(d.factura).toLowerCase().includes(q))
                 );
 
-                // Agrupar por nombre de mes y sumar Monto
+                // Agrupar por mes (total) y, si aplica, por mes y serie (servicio / pago)
+                const claveSerie = vista === 'servicio' ? 'servicio' : 'pago';
                 const porMes = {};
+                const matriz = {};
                 let total = 0;
                 let tickets = 0;
                 pagadas.forEach(d => {
@@ -2028,6 +2065,11 @@
                     porMes[mes] = (porMes[mes] || 0) + monto;
                     total += monto;
                     tickets++;
+                    if (multi) {
+                        const s = d[claveSerie] || 'SIN DATO';
+                        matriz[s] = matriz[s] || {};
+                        matriz[s][mes] = (matriz[s][mes] || 0) + monto;
+                    }
                 });
 
                 // Orden cronológico (Enero ... Diciembre)
@@ -2039,55 +2081,80 @@
                 const valores = meses.map(m => porMes[m]);
                 const nMeses = Math.max(meses.length, 1);
 
-                // KPIs
+                // KPIs (siempre sobre el total pagado)
                 document.getElementById('evo-total').textContent = money(total);
                 document.getElementById('evo-promedio').textContent = money(total / nMeses);
                 document.getElementById('evo-tickets').textContent = tickets.toLocaleString('en-US');
                 document.getElementById('evo-ticket').textContent = money(tickets ? total / tickets : 0);
-                document.getElementById('evo-total-sub').textContent =`Basado en ${meses.length} ${meses.length === 1 ? 'mes' : 'meses'} de datos`;
+                document.getElementById('evo-total-sub').textContent = `Basado en ${meses.length} ${meses.length === 1 ? 'mes' : 'meses'} de datos`;
 
                 window.setEmptyState('chartEvolucionVentas', valores.some(v => v > 0));
+
+                // Datasets según la vista
+                let datasets;
+                if (!multi) {
+                    datasets = [{
+                        label: 'Recaudación ($)',
+                        data: valores,
+                        borderColor: COLOR,
+                        backgroundColor: COLOR_FILL,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#FFFFFF',
+                        pointBorderColor: COLOR,
+                        pointBorderWidth: 2
+                    }];
+                } else {
+                    const suma = s => Object.values(matriz[s]).reduce((a, b) => a + b, 0);
+                    const series = Object.keys(matriz).sort((a, b) => suma(b) - suma(a));
+                    datasets = series.map((s, i) => {
+                        const col = colorSerie(i);
+                        return {
+                            label: s,
+                            data: meses.map(m => matriz[s][m] || 0),
+                            borderColor: col,
+                            backgroundColor: col,
+                            borderWidth: 2.5,
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 3.5,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#FFFFFF',
+                            pointBorderColor: col,
+                            pointBorderWidth: 2
+                        };
+                    });
+                }
 
                 if (chartEvo) chartEvo.destroy();
                 chartEvo = new Chart(canvas.getContext('2d'), {
                     type: 'line',
-                    data: {
-                        labels: meses,
-                        datasets: [{
-                            label: 'Recaudación ($)',
-                            data: valores,
-                            borderColor: COLOR,
-                            backgroundColor: COLOR_FILL,
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
-                            pointBackgroundColor: '#FFFFFF',
-                            pointBorderColor: COLOR,
-                            pointBorderWidth: 2
-                        }]
-                    },
+                    data: { labels: meses, datasets },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        layout: {
-                        padding: {
-                            top: 30,    // Espacio para el número de arriba
-                            right: 40,  // Evita que el número de Octubre se corte
-                            left: 10,
-                            bottom: 0
-                        }
-                    },
+                        interaction: multi ? { mode: 'index', intersect: false } : undefined,
+                        layout: { padding: { top: 30, right: 40, left: 10, bottom: 0 } },
                         plugins: {
-                            legend: { display: false },
+                            legend: multi ? {
+                                display: true,
+                                position: 'bottom',
+                                labels: { usePointStyle: true, boxWidth: 8, color: '#374151', font: { size: 11 } }
+                            } : { display: false },
                             tooltip: {
+                                filter: multi ? (item => item.raw > 0) : undefined,
+                                itemSort: multi ? ((a, b) => b.raw - a.raw) : undefined,
                                 callbacks: {
-                                    // Ej.: "Septiembre: $18,059.07"
-                                    label: c => `${c.label}: ${money(c.raw)}`
+                                    label: c => multi
+                                        ? `${c.dataset.label}: ${money(c.raw)}`
+                                        : `${c.label}: ${money(c.raw)}`
                                 }
                             },
-                            datalabels: {
+                            // En multilínea se apagan las etiquetas sobre los puntos
+                            datalabels: multi ? { display: false } : {
                                 display: true,
                                 anchor: 'end',
                                 align: 'top',
@@ -2115,6 +2182,10 @@
                 });
             }
 
+            // Al cambiar el selector se vuelve a dibujar el gráfico
+            const selVista = document.getElementById('evo-vista');
+            if (selVista) selVista.addEventListener('change', render);
+
             // Enganches sin modificar las funciones originales
             const origProcess = window.processDAS2;
             window.processDAS2 = function () {
@@ -2131,6 +2202,6 @@
         })();
     </script>
 
-<script>lucide.createIcons();</script>
+
 </body>
 </html>
