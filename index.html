@@ -860,7 +860,8 @@
                 });
             }
 
-            // 4. Evolución mensual global (Agosto → Septiembre → Octubre)
+                      // 4. Evolución mensual global (Agosto → Septiembre → Octubre)
+            //    Suma los totales de todos los clientes por mes.
             //    Usa dataSinFiltroMes (base) para mostrar siempre los 3 meses, sin importar el filtro de Mes.
             const mesesEvo = ['Agosto', 'Septiembre', 'Octubre'];
             const totalesMes = {};
@@ -875,36 +876,45 @@
             const hayEvo = mesesEvo.some(m => totalesMes[m].factura !== 0 || totalesMes[m].costo !== 0 || totalesMes[m].utilidad !== 0);
             setEmptyState('ventas-evolucion', hayEvo);
             if (hayEvo) {
-                const lineas = [
-                    { label: 'Total Ventas', key: 'factura',  color: '#3b82f6' },
-                    { label: 'Costo Total',  key: 'costo',    color: '#ef4444' },
+                const series = [
+                    { label: 'Total Ventas',  key: 'factura',  color: '#3b82f6' },
+                    { label: 'Costo Total',   key: 'costo',    color: '#ef4444' },
                     { label: 'Utilidad Neta', key: 'utilidad', color: '#10b981' }
                 ];
                 chartVentasEvolucion = new Chart(document.getElementById('chartVentasEvolucion'), {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels: mesesEvo,
-                        datasets: lineas.map(l => ({
-                            label: l.label,
-                            data: mesesEvo.map(m => totalesMes[m][l.key]),
-                            borderColor: l.color,
-                            backgroundColor: l.color,
-                            borderWidth: 2.5,
-                            tension: 0.3,
-                            pointRadius: 4,
-                            pointBackgroundColor: l.color
+                        datasets: series.map(s => ({
+                            label: s.label,
+                            data: mesesEvo.map(m => totalesMes[m][s.key]),
+                            backgroundColor: s.color,
+                            borderColor: s.color,
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            maxBarThickness: 48
                         }))
                     },
                     options: {
-                        responsive: true, maintainAspectRatio: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
-                        layout: { padding: { left: 10, right: 20, top: 10 } },
+                        layout: { padding: { top: 28, right: 12, left: 6 } },
                         plugins: {
                             legend: { position: 'bottom' },
                             tooltip: {
                                 callbacks: {
                                     label: c => ` ${c.dataset.label}: ${money(c.parsed.y)}`
                                 }
+                            },
+                            datalabels: {
+                                display: true,
+                                anchor: 'end',
+                                align: 'end',
+                                clip: false,
+                                color: '#334155',
+                                font: { weight: 'bold', size: 9 },
+                                formatter: v => money(v)
                             }
                         },
                         scales: {
