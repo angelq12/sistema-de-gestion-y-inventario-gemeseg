@@ -1972,7 +1972,7 @@
         });
     </script>
     
-    <!-- Evolución de ventas: recaudación mensual (solo facturas PAGADAS) -->
+        <!-- Evolución de ventas: recaudación mensual (barras, columna MES) -->
     <script>
         (function () {
             const COLOR = '#D34A68';
@@ -1985,17 +1985,21 @@
                 if (!canvas || typeof rawDas2Data === 'undefined') return;
 
                 const val = id => document.getElementById(id).value;
+                const mes = val('filter-mes');
                 const servicio = val('filter-servicio');
                 const pago = val('filter-pago');
                 const q = val('search-das2').toLowerCase();
 
+                // Solo facturas PAGADAS; respeta Mes, Servicio, Pago y búsqueda
                 const pagadas = rawDas2Data.filter(d =>
                     d.estado === 'PAGADO' &&
+                    (mes === 'TODOS' || d.mes === mes) &&
                     (servicio === 'TODOS' || d.servicio === servicio) &&
                     (pago === 'TODOS' || d.pago === pago) &&
                     (String(d.cliente).toLowerCase().includes(q) || String(d.factura).toLowerCase().includes(q))
                 );
 
+                // Agrupar por nombre de mes (Enero ... Diciembre)
                 const porMes = {};
                 let total = 0;
                 pagadas.forEach(d => {
@@ -2003,6 +2007,7 @@
                     total += d.monto;
                 });
 
+                // Orden cronológico
                 const orden = Object.values(mesesNombres);
                 const meses = Object.keys(porMes).sort((a, b) => {
                     const ia = orden.indexOf(a), ib = orden.indexOf(b);
@@ -2022,35 +2027,20 @@
 
                 if (chartEvo) chartEvo.destroy();
                 chartEvo = new Chart(canvas.getContext('2d'), {
-                    type: 'line',
+                    type: 'bar',
                     data: {
                         labels: meses,
                         datasets: [{
                             label: 'Recaudación ($)',
                             data: valores,
-                            borderColor: COLOR,
-                            borderWidth: 2,
-                            tension: 0.4,
-                            fill: true,
-                            backgroundColor: (ctx) => {
-                                const a = ctx.chart.chartArea;
-                                if (!a) return 'rgba(211,74,104,0.2)';
-                                const g = ctx.chart.ctx.createLinearGradient(0, a.top, 0, a.bottom);
-                                g.addColorStop(0, 'rgba(211,74,104,0.35)');
-                                g.addColorStop(1, 'rgba(211,74,104,0)');
-                                return g;
-                            },
-                            pointRadius: 4,
-                            pointHoverRadius: 7,
-                            pointBackgroundColor: '#FFFFFF',
-                            pointBorderColor: COLOR,
-                            pointBorderWidth: 2
+                            backgroundColor: COLOR,
+                            borderRadius: 6,
+                            maxBarThickness: 70
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
                         plugins: {
                             legend: { display: false },
                             tooltip: { callbacks: { label: c => money(c.raw) } }
@@ -2058,7 +2048,7 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                grid: { color: '#ECECEC', drawBorder: false },
+                                grid: { color: '#ECECEC' },
                                 border: { display: false },
                                 ticks: { color: '#9CA3AF', callback: v => '$ ' + v.toLocaleString('en-US') }
                             },
@@ -2071,6 +2061,7 @@
                 });
             }
 
+            // Enganches sin modificar las funciones originales
             const origProcess = window.processDAS2;
             window.processDAS2 = function () {
                 const r = origProcess.apply(this, arguments);
@@ -2084,6 +2075,8 @@
                 return r;
             };
         })();
+    </script>
+
 <script>lucide.createIcons();</script>
 </body>
 </html>
